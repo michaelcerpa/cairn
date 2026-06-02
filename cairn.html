@@ -40,8 +40,9 @@
   .search-card button{margin-top:9px;width:100%;border:none;background:var(--accent);color:#fff;border-radius:9px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s}
   .search-card button:hover{background:#33502f}
   .search-card button:active{transform:scale(.98)}
-  .search-hint{font-size:12px;color:var(--ink-faint);margin-top:13px;line-height:1.5}
-  .search-hint b{color:var(--ink-soft);font-weight:500}
+  .search-sub{font-size:12px;color:var(--ink-faint);margin:7px 0 12px;padding-left:15px;position:relative;line-height:1.45}
+  .search-sub::before{content:"•";position:absolute;left:4px;color:var(--ink-faint)}
+  .search-sub b{color:var(--ink-soft);font-weight:500}
 
   /* ---------- route grid (right column) ---------- */
   .section-label{font-family:'Spline Sans Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-faint);margin-bottom:14px;display:flex;align-items:center;gap:9px}
@@ -223,13 +224,13 @@
         <p class="blurb">The current beta for <b>multi-day Sierra trips</b> — permits, conditions, packing lists, and GPX files.</p>
         <div class="search-card">
           <div class="search-label">Describe a trip</div>
-          <input id="q" placeholder='e.g. "3 nights near Bishop, moderate"'>
+          <div class="search-sub">Or browse <b>5 ready-to-go Sierra routes</b> at right.</div>
+          <input id="q" placeholder='e.g. "3 nights near Bishop this summer"'>
           <button id="goBtn">Find routes</button>
-          <div class="search-hint">Or browse <b>5 ready-to-go Sierra routes</b> at right.</div>
         </div>
       </aside>
       <section class="home-right">
-        <div class="section-label">Sierra routes <span class="count" id="rCount">· 5 ready to go</span></div>
+        <div class="section-label">Sierra routes</div>
         <div class="parsed" id="parsed">
           <div class="parsed-top">
             <span class="lab">Understood as</span>
@@ -249,7 +250,7 @@
     <div class="detail-card" id="detailCard"></div>
   </div>
 
-  <footer id="foot">Cairn · reference concept · availability, snow, road &amp; beta shown is illustrative.<br>
+  <footer id="foot">Cairn · illustrative concept<br>
     <span style="opacity:.85">Trailhead photos via Wikimedia Commons — Dusy Basin © Josh Steinitz/NileGuide (CC BY 2.0) · Little Lakes Valley &amp; Sabrina Basin © Jeffrey Pang (CC BY 2.0) · Big Pine Lakes © Jim Morefield (CC BY-SA 2.0) · Cottonwood Lakes © Marty B (CC BY-SA 2.0).</span></footer>
 </div>
 
@@ -260,7 +261,7 @@ const TODAY="Jul 14, 2026";
 // Trailhead photos are local files in photos/ (see each route's photo: field for credit); gradient backdrop shows if one fails to load
 
 const ROUTES=[
-  {id:"bishop-dusy",name:"Bishop Pass → Dusy Basin",trailhead:"South Lake",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
+  {id:"bishop-dusy",name:"Bishop Pass → Dusy Basin",trailhead:"South Lake",agency:"Inyo National Forest",difficulty:"hard",diffLabel:"Strenuous",region:"bishop",
    photo:"photos/bishop-dusy.jpg", /* Dusy Basin — Josh Steinitz/NileGuide, CC BY 2.0 (Wikimedia Commons) */
    coords:[37.1689,-118.5644],
    miles:22,gain:3800,nights:3,maxEl:11972,permitType:"Reservation",permitMechanic:"Quota trailhead",availKind:"reservation",availSpots:4,availTotal:10,snowLine:11500,snowNote:"Patchy snow above ~11,500 ft on the pass; clear below.",road:"South Lake Rd",lowTemp:28,bearCan:true,elev:[9768,10200,10800,11400,11972,11600,11100,10600,11200,11900,11200,10400,9900,9768],
@@ -303,7 +304,7 @@ const ROUTES=[
   {id:"sabrina",name:"Sabrina Basin",trailhead:"Lake Sabrina",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
    photo:"photos/sabrina.jpg", /* Blue Lake, Sabrina Basin — Jeffrey Pang, CC BY 2.0 (Wikimedia Commons) */
    coords:[37.2125,-118.6125],
-   miles:16,gain:2400,nights:2,maxEl:11100,permitType:"Walk-up",permitMechanic:"No reservation needed",availKind:"walkup",availSpots:null,availTotal:null,snowLine:11500,snowNote:"Below snow line — basin lakes clear.",road:"Lake Sabrina Rd",lowTemp:32,bearCan:true,elev:[9080,9500,10000,10500,10900,11100,10800,10400,9900,9400,9080],
+   miles:16,gain:2400,nights:2,maxEl:11100,permitType:"Walk-up quota",permitMechanic:"Quota trailhead — ~10 walk-up spots/day",availKind:"walkup",availSpots:null,availTotal:null,snowLine:11500,snowNote:"Below snow line — basin lakes clear.",road:"Lake Sabrina Rd",lowTemp:32,bearCan:true,elev:[9080,9500,10000,10500,10900,11100,10800,10400,9900,9400,9080],
    betaHeadline:"<b>The reliable walk-up.</b> When the reservation trailheads are booked, this is the move — same alpine character, no lottery. Recent reports are clean and quiet.",
    snippets:[{q:"Walked up Friday, got the permit no problem at the ranger station. Basin was nearly empty.",src:"r/backpacking · Jul 11"},{q:"Blue Lake and Dingleberry are gorgeous and uncrowded. Solid plan B that's really a plan A.",src:"AllTrails · Jul 8"}],
    flagKit:[],
@@ -332,8 +333,6 @@ function renderHome(list){
         <div class="tile-stats"><span class="s"><b>${r.miles}</b> mi</span><span class="s"><b>${r.gain.toLocaleString()}</b> ft</span><span class="s"><b>${r.nights}</b> nights</span></div>
       </div>
     </div>`).join("");
-  $("#rCount").textContent = `· ${(list||ROUTES).length} match${(list||ROUTES).length!==1?'es':' '}`;
-  if(!list)$("#rCount").textContent = `· 5 ready to go`;
 }
 
 /* clean elevation profile — HTML labels + SVG path with non-scaling stroke */
@@ -365,7 +364,7 @@ function bigProfile(data){
 }
 
 function permitAvail(r){
-  if(r.availKind==="walkup")return `<div class="avail"><span class="dot g"></span><span>No reservation needed — first-come walk-up</span></div>`;
+  if(r.availKind==="walkup")return `<div class="avail"><span class="dot g"></span><span>Permit required · ~10 walk-up spots/day, released ~2 weeks out on Recreation.gov</span></div>`;
   const pct=Math.round(r.availSpots/r.availTotal*100),low=r.availSpots<=2;
   return `<div class="avail"><span class="dot ${low?'w':'g'}"></span><span><b>${r.availSpots} of ${r.availTotal}</b> spots for ${TODAY}</span><span class="bar"><i style="width:${pct}%;background:${low?'var(--flag)':'var(--good)'}"></i></span></div>`;
 }
@@ -478,8 +477,8 @@ window.openRoute=function(id){
     </div>
     <div class="exits">
       <a class="exit primary" href="https://www.recreation.gov" target="_blank" rel="noopener">
-        <span class="et">${r.availKind==='walkup'?'Find the ranger station':'Reserve permit'} <span class="arr">→</span></span>
-        <span class="ed">${r.availKind==='walkup'?'Walk-up · White Mountain Ranger Station':'Opens on Recreation.gov'}</span>
+        <span class="et">${r.availKind==='walkup'?'Check walk-up permit':'Reserve permit'} <span class="arr">→</span></span>
+        <span class="ed">${r.availKind==='walkup'?'Walk-up quota · Recreation.gov, ~2 weeks out':'Opens on Recreation.gov'}</span>
       </a>
       <a class="exit" onclick="openPack('${r.id}');return false;" href="#">
         <span class="et">Get packing list <span class="arr">→</span></span>
