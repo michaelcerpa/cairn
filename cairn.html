@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cairn — Sierra backcountry beta</title>
+<link rel="icon" type="image/svg+xml" href="cairn.svg">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Spline+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg:#f4f1ea; --paper:#fbfaf6; --ink:#23211c; --ink-soft:#5c574c; --ink-faint:#928c7d;
+    --line:#e6e1d4; --line-strong:#d6d0bf; --accent:#3d5a3d; --accent-soft:#e8eee6;
+    --good:#3d6b45; --flag:#8a5a1e; --flag-bg:#f5edda; --bad:#9b4a3a;
+    --shadow:0 1px 2px rgba(35,33,28,.04), 0 8px 22px -14px rgba(35,33,28,.20);
+    --shadow-lift:0 2px 4px rgba(35,33,28,.05), 0 22px 48px -18px rgba(35,33,28,.30);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Spline Sans',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+  body{background-image:radial-gradient(circle at 15% 8%, #ffffff66, transparent 42%),repeating-linear-gradient(118deg, transparent, transparent 70px, #00000004 70px, #00000004 71px);min-height:100vh}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+
+  /* ---------- top bar ---------- */
+  .topbar{padding:26px 0 22px}
+  .brand{display:flex;align-items:baseline;gap:11px}
+  .logo{font-family:'Fraunces',serif;font-weight:600;font-size:26px;letter-spacing:-.01em}
+
+  /* ---------- home: two-column ---------- */
+  #home.hide{display:none}
+  .home-layout{display:grid;grid-template-columns:340px 1fr;gap:48px;margin-bottom:64px;align-items:start}
+  .home-left{position:sticky;top:24px}
+  .home-left .blurb{color:var(--ink-soft);font-size:15px;line-height:1.55;margin-bottom:22px}
+  .home-left .blurb b{color:var(--ink);font-weight:600}
+
+  .search-card{background:var(--paper);border:1px solid var(--line-strong);border-radius:13px;padding:16px;box-shadow:var(--shadow)}
+  .search-label{font-family:'Spline Sans Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-faint);margin-bottom:9px;font-weight:500}
+  .search-card input{width:100%;border:1px solid var(--line);background:#fff;border-radius:9px;padding:11px 13px;font-family:inherit;font-size:14.5px;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+  .search-card input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .search-card input::placeholder{color:var(--ink-faint)}
+  .search-card button{margin-top:9px;width:100%;border:none;background:var(--accent);color:#fff;border-radius:9px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s}
+  .search-card button:hover{background:#33502f}
+  .search-card button:active{transform:scale(.98)}
+  .search-hint{font-size:12px;color:var(--ink-faint);margin-top:13px;line-height:1.5}
+  .search-hint b{color:var(--ink-soft);font-weight:500}
+
+  /* ---------- route grid (right column) ---------- */
+  .section-label{font-family:'Spline Sans Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-faint);margin-bottom:14px;display:flex;align-items:center;gap:9px}
+  .section-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .section-label .count{color:var(--ink-soft);font-weight:500}
+
+  .parsed{background:var(--accent-soft);border:1px solid #d4ddd0;border-radius:11px;padding:12px 14px;margin-bottom:14px;display:none}
+  .parsed.show{display:block;animation:fade .3s ease}
+  .parsed-top{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .parsed-top .lab{font-family:'Spline Sans Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:600}
+  .parsed-top .sub{font-size:12px;color:var(--ink-soft)}
+  .pills{display:flex;flex-wrap:wrap;gap:7px}
+  .pill{background:#fff;border:1px solid #cdd8c9;border-radius:7px;padding:5px 10px;font-size:12.5px;display:inline-flex;align-items:center;gap:7px}
+  .pill .k{color:var(--ink-faint);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+  .pill .v{color:var(--ink);font-weight:600;font-family:'Spline Sans Mono',monospace;font-size:12px}
+  .pill .x{color:var(--ink-faint);cursor:pointer;font-size:13px;line-height:1;margin-left:1px;padding:0 3px;border-radius:4px;user-select:none}
+  .pill .x:hover{color:var(--bad);background:#0000000a}
+  .empty-state{background:#fff;border:1px dashed var(--line-strong);border-radius:11px;padding:14px 16px;margin-bottom:14px;font-size:13.5px;color:var(--ink-soft);display:none}
+  .empty-state.show{display:block;animation:fade .3s ease}
+  .empty-state b{color:var(--ink)}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+
+  .tile{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .18s cubic-bezier(.34,1.3,.7,1), box-shadow .18s, border-color .18s;display:flex;flex-direction:column}
+  .tile:hover{transform:translateY(-3px);box-shadow:var(--shadow-lift);border-color:var(--line-strong)}
+  .tile:hover .tile-name{color:var(--accent)}
+  .tile-visual{height:150px;position:relative;overflow:hidden;background:linear-gradient(135deg,#6b8a6b 0%, var(--accent) 60%, #2a4530 100%)}
+  .tile-visual img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .tile-visual::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,.35) 100%);pointer-events:none}
+  .tile-tag{position:absolute;top:11px;right:11px;font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:500;padding:5px 9px;border-radius:6px;letter-spacing:.02em;backdrop-filter:blur(6px);z-index:2}
+  .tile-tag.res{background:rgba(255,255,255,.92);color:var(--accent);border:1px solid rgba(196,218,198,.7)}
+  .tile-tag.res.low{background:rgba(246,239,224,.92);color:var(--flag);border:1px solid rgba(230,212,172,.7)}
+  .tile-tag.walk{background:rgba(255,255,255,.92);color:var(--accent);border:1px solid rgba(196,218,198,.7)}
+  .tile-body{padding:14px 16px 16px}
+  .tile-name{font-family:'Fraunces',serif;font-weight:600;font-size:18px;letter-spacing:-.01em;transition:color .15s;line-height:1.2}
+  .tile-trail{color:var(--ink-faint);font-size:12.5px;margin-top:3px}
+  .tile-stats{display:flex;gap:14px;margin-top:11px}
+  .tile-stats .s{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--ink-soft)}
+  .tile-stats .s b{color:var(--ink);font-weight:500}
+
+  /* ---------- detail ---------- */
+  #detail{display:none}
+  #detail.show{display:block;animation:fade .3s ease}
+  .back{display:inline-flex;align-items:center;gap:7px;color:var(--ink-soft);font-size:13.5px;cursor:pointer;background:none;border:none;font-family:inherit;padding:6px 0;margin-bottom:14px;transition:color .15s}
+  .back:hover{color:var(--accent)}
+  .detail-card{background:var(--paper);border:1px solid var(--line-strong);border-radius:16px;box-shadow:var(--shadow-lift);overflow:hidden;margin-bottom:60px;max-width:780px}
+  .detail-hero{padding:24px 26px 20px;border-bottom:1px solid var(--line)}
+  .detail-hero .dname{font-family:'Fraunces',serif;font-weight:600;font-size:27px;letter-spacing:-.015em;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .badge{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:6px;border:1px solid}
+  .badge.easy{color:#3d6b45;border-color:#bcd4bf;background:#eaf2ea}
+  .badge.mod{color:#8a5a1e;border-color:#e0cfa8;background:#f6efe0}
+  .badge.hard{color:#9b4a3a;border-color:#e0bcb2;background:#f6e7e2}
+  .detail-hero .dtrail{color:var(--ink-soft);font-size:14px;margin-top:6px}
+  .dstats{display:flex;gap:26px;flex-wrap:wrap;margin-top:18px}
+  .dstat{display:flex;flex-direction:column;gap:1px}
+  .dstat .num{font-family:'Spline Sans Mono',monospace;font-weight:500;font-size:17px}
+  .dstat .cap{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint)}
+
+  .detail-body{padding:6px 26px 24px}
+  .block{padding:20px 0;border-bottom:1px solid var(--line)}
+  .block:last-child{border-bottom:none}
+  .block-h{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+  .diamond{width:7px;height:7px;background:var(--accent);transform:rotate(45deg);flex-shrink:0}
+  .block-h .t{font-size:12px;text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+  .block-h .when{margin-left:auto;font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--ink-faint)}
+
+  /* fixed elevation profile (HTML labels + clean SVG) */
+  .profile-cap{font-family:'Spline Sans Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);margin-bottom:6px}
+  .profile-wrap{display:flex;height:130px;margin-bottom:6px}
+  .profile-labels{width:54px;display:flex;flex-direction:column;justify-content:space-between;padding:2px 8px 2px 0;font-family:'Spline Sans Mono',monospace;font-size:10px;color:var(--ink-faint);text-align:right;flex-shrink:0}
+  .profile-graph{flex:1;height:100%;border-left:1px solid var(--line);border-bottom:1px solid var(--line);position:relative}
+  .profile-graph svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .profile-xlab{display:flex;justify-content:space-between;padding-left:54px;font-family:'Spline Sans Mono',monospace;font-size:10px;color:var(--ink-faint);margin-top:4px}
+
+  .beta-headline{font-size:14.5px;color:var(--ink);background:var(--accent-soft);border:1px solid #d4ddd0;border-radius:10px;padding:12px 14px;line-height:1.5}
+  .beta-headline b{font-weight:600}
+  .snippet{display:flex;gap:11px;padding:11px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .snippet:last-child{border-bottom:none}
+  .snippet .q{flex:1;color:var(--ink-soft);font-style:italic}
+  .snippet .src{font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--ink-faint);white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:2px}
+
+  .permit-grid{display:flex;flex-wrap:wrap;gap:11px 28px}
+  .pk{display:flex;flex-direction:column;gap:2px}
+  .pk .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint)}
+  .pk .v{font-size:14px;font-weight:500}
+  .avail{display:flex;align-items:center;gap:9px;font-size:13.5px;margin-top:13px;padding:10px 13px;border-radius:9px;background:#fff;border:1px solid var(--line)}
+  .avail .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .dot.g{background:var(--good)}.dot.w{background:var(--flag)}
+  .avail .bar{flex:1;height:6px;border-radius:3px;background:#eee;overflow:hidden;max-width:130px}
+  .avail .bar i{display:block;height:100%;border-radius:3px}
+  .avail b{font-weight:600}
+
+  .cond-row{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13.5px;border-bottom:1px dashed var(--line)}
+  .cond-row:last-child{border-bottom:none}
+  .cond-row .ck{width:110px;color:var(--ink-soft);flex-shrink:0}
+  .cond-row .cv{flex:1}
+  .cond-row .mk{font-size:12px;font-weight:600}
+  .mk.ok{color:var(--good)}.mk.w{color:var(--flag)}
+
+  .kit-group{margin-bottom:14px}.kit-group:last-child{margin-bottom:0}
+  .kit-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:8px;font-weight:600}
+  .kit-item{display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:13.5px}
+  .kit-item .ki-name{font-weight:500}.kit-item .ki-why{color:var(--ink-soft);font-size:12.5px}
+  .kit-item.req .ki-name{color:var(--accent)}
+  .kit-item.flag{background:var(--flag-bg);border:1px solid #ecdfc2;border-radius:8px;padding:9px 12px;margin:3px 0}
+  .kit-item.flag .ki-name{color:var(--flag)}
+  .kit-tag{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:2px}
+  .kit-tag.r{background:#eaf2ea;color:var(--accent);border:1px solid #c4dac6}
+  .kit-tag.f{background:#fff;color:var(--flag);border:1px solid #e6d4ac}
+  .base-toggle{font-size:12.5px;color:var(--accent);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:5px;user-select:none}
+  .base-toggle:hover{text-decoration:underline}
+  .base-list{display:none;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .base-list.show{display:flex}
+  .base-list span{font-size:12px;color:var(--ink-soft);background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 9px}
+
+  .safety p{font-size:13.5px;color:var(--ink-soft);margin-bottom:11px}
+  .backup{background:#fff;border:1px dashed var(--line-strong);border-radius:10px;padding:12px 14px;font-size:13.5px}
+  .backup .bl{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:5px;font-weight:600}
+  .backup b{color:var(--accent)}
+
+  .exits{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:22px 26px;background:#f0ede4;border-top:1px solid var(--line)}
+  .exit{border:1px solid var(--line-strong);background:var(--paper);border-radius:12px;padding:16px;cursor:pointer;text-decoration:none;transition:all .16s;display:flex;flex-direction:column;gap:4px}
+  .exit:hover{border-color:var(--accent);background:#fff;transform:translateY(-2px)}
+  .exit .et{font-weight:600;font-size:14.5px;color:var(--ink);display:flex;align-items:center;justify-content:space-between}
+  .exit .et .arr{color:var(--accent);transition:transform .14s}
+  .exit:hover .et .arr{transform:translateX(3px)}
+  .exit .ed{font-size:12.5px;color:var(--ink-soft)}
+  .exit.primary{border-color:var(--accent)}
+
+  footer{padding:6px 0 50px;color:var(--ink-faint);font-size:11.5px;text-align:center;line-height:1.7}
+
+  .scrim{position:fixed;inset:0;background:rgba(35,33,28,.42);backdrop-filter:blur(3px);display:none;z-index:40;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+  .scrim.show{display:flex;animation:fade .25s ease}
+  .pack{background:var(--paper);border-radius:18px;max-width:540px;width:100%;box-shadow:0 30px 80px -20px rgba(0,0,0,.5);animation:rise .35s cubic-bezier(.4,0,.2,1);overflow:hidden}
+  .pack-head{padding:22px 24px 18px;background:var(--accent);color:#fff;position:relative}
+  .pack-head .pl{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.8}
+  .pack-head h3{font-family:'Fraunces',serif;font-weight:600;font-size:22px;margin-top:5px}
+  .pack-head .sub{font-size:12.5px;opacity:.88;margin-top:3px;font-family:'Spline Sans Mono',monospace}
+  .pack-close{position:absolute;top:18px;right:18px;background:#ffffff22;border:none;color:#fff;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:17px}
+  .pack-close:hover{background:#ffffff33}
+  .pack-body{padding:18px 24px 22px}
+
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  @media(max-width:880px){
+    .home-layout{grid-template-columns:1fr;gap:24px}
+    .home-left{position:static}
+  }
+  @media(max-width:580px){
+    .wrap{padding:0 16px}.grid{grid-template-columns:1fr}.exits{grid-template-columns:1fr}
+    .dstats{gap:18px}.cond-row{flex-wrap:wrap}.cond-row .ck{width:100%}
+    .detail-hero,.detail-body,.exits,.pack-body{padding-left:18px;padding-right:18px}
+  }
+  @media(min-width:581px) and (max-width:780px){
+    .exits{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 44 36" width="27" height="22" style="transform: translateY(2px);" aria-hidden="true">
+        <circle cx="37" cy="9" r="2.8" fill="var(--accent)"/>
+        <path d="M 2 32 L 13 13 L 24 32 Z" fill="var(--accent)" opacity="0.55"/>
+        <path d="M 13 32 L 24 4 L 35 32 Z" fill="var(--accent)"/>
+        <path d="M 26 32 L 35 16 L 42 32 Z" fill="var(--accent)" opacity="0.78"/>
+      </svg>
+      <span class="logo">Cairn</span>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <div id="home">
+    <div class="home-layout">
+      <aside class="home-left">
+        <p class="blurb">The current beta for <b>multi-day Sierra trips</b> — permits, conditions, packing lists, and GPX files.</p>
+        <div class="search-card">
+          <div class="search-label">Describe a trip</div>
+          <input id="q" placeholder='e.g. "3 nights near Bishop, moderate"'>
+          <button id="goBtn">Find routes</button>
+          <div class="search-hint">Or browse <b>5 ready-to-go Sierra routes</b> at right.</div>
+        </div>
+      </aside>
+      <section class="home-right">
+        <div class="section-label">Sierra routes <span class="count" id="rCount">· 5 ready to go</span></div>
+        <div class="parsed" id="parsed">
+          <div class="parsed-top">
+            <span class="lab">Understood as</span>
+            <span class="sub">tap × to remove a constraint</span>
+          </div>
+          <div class="pills" id="pills"></div>
+        </div>
+        <div class="empty-state" id="emptyState"></div>
+        <div class="grid" id="grid"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- DETAIL -->
+  <div id="detail">
+    <button class="back" id="backBtn">← All routes</button>
+    <div class="detail-card" id="detailCard"></div>
+  </div>
+
+  <footer id="foot">Cairn · reference concept · availability, snow, road &amp; beta shown is illustrative.<br>
+    <span style="opacity:.85">Trailhead photos via Wikimedia Commons — Dusy Basin © Josh Steinitz/NileGuide (CC BY 2.0) · Little Lakes Valley &amp; Sabrina Basin © Jeffrey Pang (CC BY 2.0) · Big Pine Lakes © Jim Morefield (CC BY-SA 2.0) · Cottonwood Lakes © Marty B (CC BY-SA 2.0).</span></footer>
+</div>
+
+<div class="scrim" id="scrim"><div class="pack" id="packEl"></div></div>
+
+<script>
+const TODAY="Jul 14, 2026";
+// Trailhead photos are local files in photos/ (see each route's photo: field for credit); gradient backdrop shows if one fails to load
+
+const ROUTES=[
+  {id:"bishop-dusy",name:"Bishop Pass → Dusy Basin",trailhead:"South Lake",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
+   photo:"photos/bishop-dusy.jpg", /* Dusy Basin — Josh Steinitz/NileGuide, CC BY 2.0 (Wikimedia Commons) */
+   coords:[37.1689,-118.5644],
+   miles:22,gain:3800,nights:3,maxEl:11972,permitType:"Reservation",permitMechanic:"Quota trailhead",availKind:"reservation",availSpots:4,availTotal:10,snowLine:11500,snowNote:"Patchy snow above ~11,500 ft on the pass; clear below.",road:"South Lake Rd",lowTemp:28,bearCan:true,elev:[9768,10200,10800,11400,11972,11600,11100,10600,11200,11900,11200,10400,9900,9768],
+   betaHeadline:"<b>Pass is going but not fully clear.</b> Mid-July reports have one lingering snowfield on the north side of Bishop Pass — most parties cross fine in the morning, a few brought traction. Mosquitoes moderate at the Dusy lakes.",
+   snippets:[{q:"Did the pass Saturday — one firm snowfield near the top, kicked steps fine by 8am but microspikes would've been nice.",src:"r/backpacking · Jul 8"},{q:"Bugs picking up in Dusy Basin, bring a head net. Lakes still have ice on the shaded edges.",src:"AllTrails · Jul 6"}],
+   flagKit:[{name:"Microspikes",why:"snowfield reported on the pass; firm in the morning"},{name:"20°F bag",why:"forecast low of 28°F at the basin lakes"},{name:"Head net",why:"mosquitoes reported moderate at the lakes"}],
+   safety:"Bishop Pass is exposed above treeline — clear it before noon to dodge afternoon storms. Basin lakes hold ice into early July.",
+   backup:{name:"Sabrina Basin",note:"same region, no snow travel, walk-up permits available."}},
+
+  {id:"little-lakes",name:"Little Lakes Valley",trailhead:"Mosquito Flat",agency:"Inyo National Forest",difficulty:"easy",diffLabel:"Easy",region:"bishop",
+   photo:"photos/little-lakes.jpg", /* Little Lakes Valley — Jeffrey Pang, CC BY 2.0 (Wikimedia Commons) */
+   coords:[37.4356,-118.7486],
+   miles:14,gain:1100,nights:2,maxEl:11200,permitType:"Reservation",permitMechanic:"High-demand trailhead",availKind:"reservation",availSpots:2,availTotal:8,snowLine:11500,snowNote:"Below snow line the whole route — clear and dry.",road:"Rock Creek Rd",lowTemp:34,bearCan:true,elev:[10250,10400,10550,10700,10850,11000,11200,11050,10800,10500,10350,10250],
+   betaHeadline:"<b>Prime and busy.</b> Trail is dry and in great shape; the catch is parking and permits, not conditions. Get to Mosquito Flat early — the lot fills by 7am on weekends.",
+   snippets:[{q:"Lot was full by 6:45 Saturday. Trail itself is perfect right now, wildflowers peaking.",src:"AllTrails · Jul 11"},{q:"Easiest high-alpine payoff in the Sierra. Took the kids, no snow, no drama.",src:"r/CampingandHiking · Jul 9"}],
+   flagKit:[],
+   safety:"Gentle grade from the highest trailhead in the Sierra — strong day-one acclimatization. Storms still build over the Mono Divide by afternoon.",
+   backup:{name:"Hilton Lakes",note:"adjacent drainage, lower traffic, walk-up availability."}},
+
+  {id:"big-pine",name:"Big Pine Lakes (North Fork)",trailhead:"Big Pine Creek",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
+   photo:"photos/big-pine.jpg", /* Second Lake, Big Pine Creek — Jim Morefield, CC BY-SA 2.0 (Wikimedia Commons) */
+   coords:[37.1247,-118.4419],
+   miles:17,gain:2700,nights:2,maxEl:11000,permitType:"Reservation",permitMechanic:"Quota trailhead",availKind:"reservation",availSpots:6,availTotal:12,snowLine:11500,snowNote:"Below snow line — glacial lakes fully thawed.",road:"Glacier Lodge Rd",lowTemp:33,bearCan:true,elev:[7800,8400,9100,9700,10200,10600,11000,10700,10300,9600,8800,7800],
+   betaHeadline:"<b>Turquoise lakes are in.</b> The glacial lakes have thawed to full color. The early North Fork climb is hot and exposed — every recent report says start before sunrise.",
+   snippets:[{q:"Second Lake is unreal right now, that glacier-milk blue. The climb up is a furnace though, leave at dawn.",src:"r/backpacking · Jul 10"},{q:"Water flowing at all the crossings, no issues. Bear box at the trailhead was full, bring your can.",src:"AllTrails · Jul 7"}],
+   flagKit:[],
+   safety:"The early grind up the North Fork is hot and exposed — start early, carry water from the first crossing.",
+   backup:{name:"South Fork Big Pine",note:"same trailhead permit, quieter lakes."}},
+
+  {id:"cottonwood",name:"Cottonwood Lakes",trailhead:"Cottonwood Lakes",agency:"Inyo National Forest",difficulty:"easy",diffLabel:"Easy",region:"lonepine",
+   photo:"photos/cottonwood.jpg", /* Cottonwood Lakes / Cirque Peak — Marty B, CC BY-SA 2.0 (Wikimedia Commons) */
+   coords:[36.4528,-118.1697],
+   miles:12,gain:1500,nights:2,maxEl:11200,permitType:"Reservation",permitMechanic:"Gateway to Whitney zone (separate permit)",availKind:"reservation",availSpots:5,availTotal:10,snowLine:11500,snowNote:"Below snow line — golden-trout lakes clear.",road:"Horseshoe Meadows Rd",lowTemp:30,bearCan:true,elev:[10040,10300,10600,10900,11100,11200,11050,10800,10500,10200,10040],
+   betaHeadline:"<b>High, dry, gentle.</b> A favorite acclimatization base before bigger objectives. Recent reports are uniformly easy — clear trail, good fishing, cold nights.",
+   snippets:[{q:"Used it to acclimate before Langley. Lakes are clear, golden trout everywhere, nights are cold for July.",src:"r/14ers · Jul 9"},{q:"Mellow and beautiful. Note the Whitney zone needs its own permit if you're continuing.",src:"AllTrails · Jul 5"}],
+   flagKit:[{name:"30°F bag",why:"forecast low of 30°F — colder than typical July at this elevation"}],
+   safety:"High, dry, and gentle — excellent first-night base. Continuing to Mt. Whitney needs a separate Whitney Zone permit.",
+   backup:{name:"Horseshoe Meadow / Trail Pass",note:"same road, lower quota pressure, walk-up friendly."}},
+
+  {id:"sabrina",name:"Sabrina Basin",trailhead:"Lake Sabrina",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
+   photo:"photos/sabrina.jpg", /* Blue Lake, Sabrina Basin — Jeffrey Pang, CC BY 2.0 (Wikimedia Commons) */
+   coords:[37.2125,-118.6125],
+   miles:16,gain:2400,nights:2,maxEl:11100,permitType:"Walk-up",permitMechanic:"No reservation needed",availKind:"walkup",availSpots:null,availTotal:null,snowLine:11500,snowNote:"Below snow line — basin lakes clear.",road:"Lake Sabrina Rd",lowTemp:32,bearCan:true,elev:[9080,9500,10000,10500,10900,11100,10800,10400,9900,9400,9080],
+   betaHeadline:"<b>The reliable walk-up.</b> When the reservation trailheads are booked, this is the move — same alpine character, no lottery. Recent reports are clean and quiet.",
+   snippets:[{q:"Walked up Friday, got the permit no problem at the ranger station. Basin was nearly empty.",src:"r/backpacking · Jul 11"},{q:"Blue Lake and Dingleberry are gorgeous and uncrowded. Solid plan B that's really a plan A.",src:"AllTrails · Jul 8"}],
+   flagKit:[],
+   safety:"A reliable fallback when reservation trailheads are booked. Storms build fast over the crest — plan pass time before noon.",
+   backup:{name:"Tyee Lakes",note:"adjacent, also walk-up, even quieter."}}
+];
+const BASE_KIT=["Shelter","Sleeping pad","Stove + fuel","Water filter","Headlamp","Map + compass","First-aid","Rain shell","Insulating layer","Sun protection","Trekking poles"];
+const $=s=>document.querySelector(s);
+
+function tileTag(r){
+  if(r.availKind==="walkup")return `<span class="tile-tag walk">walk-up</span>`;
+  const low=r.availSpots<=2;
+  return `<span class="tile-tag res${low?' low':''}">${r.availSpots} of ${r.availTotal} permits</span>`;
+}
+
+function renderHome(list){
+  $("#grid").innerHTML=(list||ROUTES).map(r=>`
+    <div class="tile" onclick="openRoute('${r.id}')">
+      <div class="tile-visual">
+        <img src="${r.photo}" alt="" loading="lazy" onerror="this.remove()">
+        ${tileTag(r)}
+      </div>
+      <div class="tile-body">
+        <div class="tile-name">${r.name}</div>
+        <div class="tile-trail">${r.trailhead} · ${r.diffLabel}</div>
+        <div class="tile-stats"><span class="s"><b>${r.miles}</b> mi</span><span class="s"><b>${r.gain.toLocaleString()}</b> ft</span><span class="s"><b>${r.nights}</b> nights</span></div>
+      </div>
+    </div>`).join("");
+  $("#rCount").textContent = `· ${(list||ROUTES).length} match${(list||ROUTES).length!==1?'es':' '}`;
+  if(!list)$("#rCount").textContent = `· 5 ready to go`;
+}
+
+/* clean elevation profile — HTML labels + SVG path with non-scaling stroke */
+function bigProfile(data){
+  const min=Math.min(...data),max=Math.max(...data),rng=(max-min)||1;
+  const w=1000,h=140,step=w/(data.length-1);
+  const pts=data.map((v,i)=>`${(i*step).toFixed(1)},${(h-((v-min)/rng)*(h-10)-5).toFixed(1)}`);
+  const mid=Math.round((max+min)/2);
+  // light gridlines (3)
+  let grid="";
+  for(let g=1;g<=2;g++){const y=(h/3)*g;grid+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>`;}
+  return `
+    <div class="profile-wrap">
+      <div class="profile-labels">
+        <span>${max.toLocaleString()}′</span>
+        <span>${mid.toLocaleString()}′</span>
+        <span>${min.toLocaleString()}′</span>
+      </div>
+      <div class="profile-graph">
+        <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+          ${grid}
+          <path d="M0,${h} L${pts.join(" L")} L${w},${h} Z" fill="var(--accent)" opacity=".12"/>
+          <path d="M${pts.join(" L")}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+        </svg>
+      </div>
+    </div>
+    <div class="profile-xlab"><span>start</span><span>halfway</span><span>finish</span></div>
+  `;
+}
+
+function permitAvail(r){
+  if(r.availKind==="walkup")return `<div class="avail"><span class="dot g"></span><span>No reservation needed — first-come walk-up</span></div>`;
+  const pct=Math.round(r.availSpots/r.availTotal*100),low=r.availSpots<=2;
+  return `<div class="avail"><span class="dot ${low?'w':'g'}"></span><span><b>${r.availSpots} of ${r.availTotal}</b> spots for ${TODAY}</span><span class="bar"><i style="width:${pct}%;background:${low?'var(--flag)':'var(--good)'}"></i></span></div>`;
+}
+
+function kitHTML(r){
+  let h="";
+  if(r.bearCan)h+=`<div class="kit-group"><div class="kit-label">Required by regulation</div><div class="kit-item req"><span class="kit-tag r">req</span><span><span class="ki-name">Bear canister</span> <span class="ki-why">— mandatory in ${r.agency}</span></span></div></div>`;
+  if(r.flagKit.length){h+=`<div class="kit-group"><div class="kit-label">For current conditions &amp; recent beta</div>`;r.flagKit.forEach(k=>h+=`<div class="kit-item flag"><span class="kit-tag f">add</span><span><span class="ki-name">${k.name}</span> <span class="ki-why">— ${k.why}</span></span></div>`);h+=`</div>`;}
+  else{h+=`<div class="kit-group"><div class="kit-label">For current conditions</div><div class="kit-item"><span style="color:var(--good);font-weight:600">✓</span><span class="ki-why">Nothing extra — conditions are within the standard kit.</span></div></div>`;}
+  h+=`<div class="kit-group"><span class="base-toggle" onclick="toggleBase(this)">▸ Standard base (${BASE_KIT.length})</span><div class="base-list">${BASE_KIT.map(i=>`<span>${i}</span>`).join("")}</div></div>`;
+  return h;
+}
+window.toggleBase=function(el){el.nextElementSibling.classList.toggle("show");el.textContent=el.textContent.startsWith("▸")?el.textContent.replace("▸","▾"):el.textContent.replace("▾","▸");};
+
+/* GPX export
+   Builds a valid GPX 1.1 file from the route's elevation array + trailhead
+   coordinates. The track is synthesized: we anchor at the real trailhead lat/lng
+   and walk outward in an arc sized roughly to the route's mileage, sampling
+   elevation along the way. Opens in Garmin Connect, Strava, Gaia GPS, etc., and
+   the start point lands in the right valley. Not survey-grade — it's a demo. */
+function buildGPX(r){
+  const [lat0,lng0]=r.coords;
+  const N=r.elev.length;
+  const halfRadiusMi=Math.max(r.miles/8, 1.2);
+  const dLat=halfRadiusMi/69, dLng=halfRadiusMi/55;
+  const pts=r.elev.map((ele,i)=>{
+    const t=i/(N-1);
+    const arc=Math.PI*t;
+    const lat=lat0 + Math.sin(arc)*dLat + (Math.random()-.5)*0.0008;
+    const lng=lng0 + (-Math.cos(arc)*dLng) + (Math.random()-.5)*0.0008;
+    return {lat:lat.toFixed(6), lng:lng.toFixed(6), ele:Math.round(ele*0.3048)};
+  });
+  const now=new Date().toISOString();
+  const trkpts=pts.map(p=>
+    `      <trkpt lat="${p.lat}" lon="${p.lng}"><ele>${p.ele}</ele><time>${now}</time></trkpt>`
+  ).join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Cairn" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>${r.name}</name>
+    <desc>${r.miles} mi · ${r.gain} ft gain · ${r.nights} nights · trailhead: ${r.trailhead}</desc>
+    <time>${now}</time>
+  </metadata>
+  <trk>
+    <name>${r.name}</name>
+    <trkseg>
+${trkpts}
+    </trkseg>
+  </trk>
+</gpx>`;
+}
+
+window.downloadGPX=function(id){
+  const r=ROUTES.find(x=>x.id===id);
+  const gpx=buildGPX(r);
+  const blob=new Blob([gpx],{type:"application/gpx+xml"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=`cairn-${r.id}.gpx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),100);
+};
+
+window.openRoute=function(id){
+  const r=ROUTES.find(x=>x.id===id),snowFlag=r.maxEl>r.snowLine;
+  $("#detailCard").innerHTML=`
+    <div class="detail-hero">
+      <div class="dname">${r.name}<span class="badge ${r.difficulty}">${r.diffLabel}</span></div>
+      <div class="dtrail">${r.trailhead} · ${r.agency}</div>
+      <div class="dstats">
+        <div class="dstat"><span class="num">${r.miles} mi</span><span class="cap">distance</span></div>
+        <div class="dstat"><span class="num">${r.gain.toLocaleString()} ft</span><span class="cap">gain</span></div>
+        <div class="dstat"><span class="num">${r.nights}</span><span class="cap">nights</span></div>
+        <div class="dstat"><span class="num">${r.maxEl.toLocaleString()} ft</span><span class="cap">high point</span></div>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="block">
+        <div class="block-h"><span class="diamond"></span><span class="t">Recent beta</span><span class="when">latest reports</span></div>
+        <div class="beta-headline">${r.betaHeadline}</div>
+        <div style="margin-top:12px">${r.snippets.map(s=>`<div class="snippet"><span class="q">"${s.q}"</span><span class="src">${s.src}</span></div>`).join("")}</div>
+      </div>
+      <div class="block">
+        <div class="block-h"><span class="diamond"></span><span class="t">Conditions</span><span class="when">as of ${TODAY}</span></div>
+        <div class="profile-cap">Elevation profile</div>${bigProfile(r.elev)}
+        <div style="margin-top:14px">
+          <div class="cond-row"><span class="ck">Snow</span><span class="cv">${r.snowNote}</span><span class="mk ${snowFlag?'w':'ok'}">${snowFlag?'flag':'clear'}</span></div>
+          <div class="cond-row"><span class="ck">Access road</span><span class="cv">${r.road} — open</span><span class="mk ok">open</span></div>
+          <div class="cond-row"><span class="ck">Fire / closures</span><span class="cv">No active closures</span><span class="mk ok">clear</span></div>
+          <div class="cond-row"><span class="ck">Forecast low</span><span class="cv">${r.lowTemp}°F at camp</span><span class="mk ${r.lowTemp<32?'w':'ok'}">${r.lowTemp<32?'cold':'mild'}</span></div>
+        </div>
+      </div>
+      <div class="block">
+        <div class="block-h"><span class="diamond"></span><span class="t">Permit</span></div>
+        <div class="permit-grid">
+          <div class="pk"><span class="k">Type</span><span class="v">${r.permitType}</span></div>
+          <div class="pk"><span class="k">Agency</span><span class="v">${r.agency}</span></div>
+          <div class="pk"><span class="k">Mechanic</span><span class="v">${r.permitMechanic}</span></div>
+        </div>
+        ${permitAvail(r)}
+      </div>
+      <div class="block safety">
+        <div class="block-h"><span class="diamond"></span><span class="t">Safety &amp; backup</span></div>
+        <p>${r.safety}</p>
+        <div class="backup"><div class="bl">If permits fall through</div><b>${r.backup.name}</b> — ${r.backup.note}</div>
+      </div>
+    </div>
+    <div class="exits">
+      <a class="exit primary" href="https://www.recreation.gov" target="_blank" rel="noopener">
+        <span class="et">${r.availKind==='walkup'?'Find the ranger station':'Reserve permit'} <span class="arr">→</span></span>
+        <span class="ed">${r.availKind==='walkup'?'Walk-up · White Mountain Ranger Station':'Opens on Recreation.gov'}</span>
+      </a>
+      <a class="exit" onclick="openPack('${r.id}');return false;" href="#">
+        <span class="et">Get packing list <span class="arr">→</span></span>
+        <span class="ed">Tuned to current conditions &amp; beta</span>
+      </a>
+      <a class="exit" onclick="downloadGPX('${r.id}');return false;" href="#">
+        <span class="et">Download GPX <span class="arr">↓</span></span>
+        <span class="ed">For Garmin, Strava, or Gaia</span>
+      </a>
+    </div>`;
+  $("#home").style.display="none";
+  $("#detail").classList.add("show");
+  $("#foot").style.display="none";
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+
+window.openPack=function(id){
+  const r=ROUTES.find(x=>x.id===id);
+  $("#packEl").innerHTML=`
+    <div class="pack-head"><button class="pack-close" onclick="closePack()">×</button>
+      <div class="pl">Packing list</div><h3>${r.name}</h3><div class="sub">${r.nights} nights · ${TODAY} conditions</div></div>
+    <div class="pack-body">${kitHTML(r)}</div>`;
+  $("#scrim").classList.add("show");document.body.style.overflow="hidden";
+};
+window.closePack=function(){$("#scrim").classList.remove("show");document.body.style.overflow="";};
+$("#scrim").addEventListener("click",e=>{if(e.target===$("#scrim"))closePack();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePack();});
+$("#backBtn").addEventListener("click",()=>{$("#detail").classList.remove("show");$("#home").style.display="";$("#foot").style.display="";window.scrollTo({top:0,behavior:"smooth"});});
+
+/* Display-only timeframe parser: recognizes months ("July"), seasons
+   ("this summer"), and relative phrases ("this weekend", "next month",
+   "early July", "mid-August"). Returns a human-readable label or null.
+   It does not filter — the demo's conditions are fixed at mid-July — it
+   just reflects back what was understood. */
+function parseWhen(t){
+  const monthMap={jan:"Jan",feb:"Feb",mar:"Mar",apr:"Apr",may:"May",jun:"Jun",jul:"Jul",aug:"Aug",sep:"Sep",oct:"Oct",nov:"Nov",dec:"Dec",january:"Jan",february:"Feb",march:"Mar",april:"Apr",june:"Jun",july:"Jul",august:"Aug",september:"Sep",october:"Oct",november:"Nov",december:"Dec"};
+  const qualMatch=t.match(/\b(early|mid|late|this|next)\b/);
+  const qual=qualMatch?qualMatch[1]:null;
+  const seasonMatch=t.match(/\b(summer|fall|autumn|winter|spring)\b/);
+  let monthKey=null;
+  for(const m in monthMap){if(new RegExp("\\b"+m+"\\b").test(t)){monthKey=m;break;}}
+  const weekUnit=/\bweekend\b/.test(t)?"weekend":(/\bweek\b/.test(t)?"week":null);
+
+  let base=null;
+  if(monthKey)base=monthMap[monthKey];
+  else if(seasonMatch)base=seasonMatch[1][0].toUpperCase()+seasonMatch[1].slice(1);
+  else if(weekUnit)base=weekUnit;
+
+  if(!base)return null;                       // a bare "this"/"next"/"early" isn't a timeframe on its own
+  const qualLabel=qual?qual[0].toUpperCase()+qual.slice(1)+" ":"";
+  return (qualLabel+base).trim();
+}
+
+/* Parse a free-text search into structured constraints + filter ROUTES.
+   Recognizes: region (Bishop, Lone Pine, Mammoth, Big Pine, etc.),
+   nights (e.g. "3 day", "2 night"), timeframe (month/season/relative), difficulty, terrain (lakes),
+   permit style (walk-up), and snow preference. Shows what was understood
+   in the .parsed band. If nothing matches, surfaces an honest empty state
+   rather than silently showing everything. */
+function runSearch(text){
+  const t=text.toLowerCase().trim();
+  const parsed={};
+  const filters=[];
+
+  // region (handles regions we don't yet have, like Mammoth, so we can say so honestly)
+  const regions=[
+    {match:/mammoth/, label:"Mammoth", region:"mammoth"},
+    {match:/bishop/, label:"Bishop", region:"bishop"},
+    {match:/big pine/, label:"Big Pine", region:"bishop", routeId:"big-pine"},
+    {match:/lone pine|whitney|cottonwood/, label:"Lone Pine", region:"lonepine"},
+    {match:/tuolumne|yosemite/, label:"Yosemite", region:"yosemite"},
+    {match:/sequoia|kings canyon/, label:"Sequoia/Kings", region:"sequoia"}
+  ];
+  let regionMatch=null;
+  for(const r of regions){if(r.match.test(t)){parsed.Region=r.label;regionMatch=r;break;}}
+
+  // nights / days
+  const nightMatch=t.match(/(\d+)\s*(?:night|day)/);
+  if(nightMatch){parsed.Nights=nightMatch[1];filters.push(r=>r.nights<=parseInt(nightMatch[1])+1 && r.nights>=parseInt(nightMatch[1])-1);}
+
+  // when / timeframe (display-only): months, seasons, and relative phrases
+  const whenLabel=parseWhen(t);
+  if(whenLabel)parsed.When=whenLabel;
+
+  // difficulty
+  if(/easy|chill|mellow/.test(t)){parsed.Difficulty="easy";filters.push(r=>r.difficulty==="easy");}
+  else if(/mod/.test(t)){parsed.Difficulty="moderate";filters.push(r=>r.difficulty==="mod");}
+  else if(/hard|strenuous|tough/.test(t)){parsed.Difficulty="hard";filters.push(r=>r.difficulty==="hard");}
+
+  // permit style
+  if(/walk.?up/.test(t)){parsed.Permits="walk-up";filters.push(r=>r.availKind==="walkup");}
+  else if(/available|open/.test(t)){parsed.Permits="available";filters.push(r=>r.availKind!=="full");}
+
+  // terrain
+  if(/lake/.test(t)){parsed.Terrain="lakes";}
+
+  // snow preference
+  if(/avoid snow|no snow|dry/.test(t)){parsed.Snow="avoid";filters.push(r=>r.maxEl<=r.snowLine);}
+
+  // region filter applies after extraction
+  let list=ROUTES.slice();
+  if(regionMatch){
+    if(regionMatch.routeId){list=list.filter(r=>r.id===regionMatch.routeId);}
+    else{list=list.filter(r=>r.region===regionMatch.region);}
+  }
+  filters.forEach(f=>{list=list.filter(f);});
+
+  showParsed(parsed);
+
+  // honest empty state
+  const empty=document.getElementById("emptyState");
+  if(list.length===0){
+    let msg;
+    if(regionMatch && regionMatch.region!=="bishop" && regionMatch.region!=="lonepine"){
+      msg=`<b>No ${regionMatch.label} routes in this preview.</b> Cairn currently covers the Bishop and Lone Pine areas. Here are the closest 5 routes.`;
+    } else {
+      msg=`<b>No routes match all those constraints.</b> Try removing a pill above, or browse the 5 routes below.`;
+    }
+    empty.innerHTML=msg;
+    empty.classList.add("show");
+    list=ROUTES.slice();
+  } else {
+    empty.classList.remove("show");
+  }
+  renderHome(list);
+}
+
+function showParsed(parsed){
+  const pills=document.getElementById("pills");
+  const band=document.getElementById("parsed");
+  const keys=Object.keys(parsed);
+  if(keys.length===0){band.classList.remove("show");return;}
+  pills.innerHTML=keys.map(k=>
+    `<span class="pill" data-k="${k}"><span class="k">${k}</span><span class="v">${parsed[k]}</span><span class="x" title="remove">×</span></span>`
+  ).join("");
+  band.classList.add("show");
+}
+
+/* clicking × on a pill removes it and re-runs with the remaining constraints in the input */
+document.addEventListener("click",e=>{
+  if(e.target && e.target.classList && e.target.classList.contains("x")){
+    const pill=e.target.closest(".pill");
+    if(pill){pill.remove();
+      // rebuild a search string from remaining pills and re-run
+      const remaining=Array.from(document.querySelectorAll("#pills .pill")).map(p=>p.querySelector(".v").textContent);
+      const newQuery=remaining.join(" ");
+      document.getElementById("q").value=newQuery;
+      if(newQuery)runSearch(newQuery); else {document.getElementById("parsed").classList.remove("show");document.getElementById("emptyState").classList.remove("show");renderHome();}
+    }
+  }
+});
+$("#goBtn").addEventListener("click",()=>{runSearch($("#q").value.trim());});
+$("#q").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#goBtn").click();}});
+renderHome();
+</script>
+</body>
+</html>
