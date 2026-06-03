@@ -170,7 +170,6 @@
   .exit .et .arr{color:var(--accent);transition:transform .14s}
   .exit:hover .et .arr{transform:translateX(3px)}
   .exit .ed{font-size:12.5px;color:var(--ink-soft)}
-  .exit.primary{border-color:var(--accent)}
 
   footer{padding:6px 0 50px;color:var(--ink-faint);font-size:11.5px;text-align:center;line-height:1.7}
 
@@ -224,7 +223,7 @@
         <p class="blurb">The current beta for <b>multi-day Sierra trips</b> — permits, conditions, packing lists, and GPX files.</p>
         <div class="search-card">
           <div class="search-label">Describe a trip</div>
-          <div class="search-sub">Or browse <b>5 ready-to-go Sierra routes</b> at right.</div>
+          <div class="search-sub">Or browse <b>5 pre-generated Sierra routes</b></div>
           <input id="q" placeholder='e.g. "3 nights near Bishop this summer"'>
           <button id="goBtn">Find routes</button>
         </div>
@@ -251,65 +250,65 @@
   </div>
 
   <footer id="foot">Cairn · illustrative concept<br>
-    <span style="opacity:.85">Trailhead photos via Wikimedia Commons — Dusy Basin © Josh Steinitz/NileGuide (CC BY 2.0) · Little Lakes Valley &amp; Sabrina Basin © Jeffrey Pang (CC BY 2.0) · Big Pine Lakes © Jim Morefield (CC BY-SA 2.0) · Cottonwood Lakes © Marty B (CC BY-SA 2.0).</span></footer>
+    <span style="opacity:.7;font-size:9.5px">Trailhead photos via Wikimedia Commons — Dusy Basin © Josh Steinitz/NileGuide (CC BY 2.0) · Little Lakes Valley &amp; Sabrina Basin © Jeffrey Pang (CC BY 2.0) · Big Pine Lakes © Jim Morefield (CC BY-SA 2.0) · Cottonwood Lakes © Marty B (CC BY-SA 2.0).</span></footer>
 </div>
 
 <div class="scrim" id="scrim"><div class="pack" id="packEl"></div></div>
 
 <script>
-const TODAY="Jul 14, 2026";
+const TODAY="Jun 2, 2026";
 // Trailhead photos are local files in photos/ (see each route's photo: field for credit); gradient backdrop shows if one fails to load
 
 const ROUTES=[
-  {id:"bishop-dusy",name:"Bishop Pass → Dusy Basin",trailhead:"South Lake",agency:"Inyo National Forest",difficulty:"hard",diffLabel:"Strenuous",region:"bishop",
+  {id:"bishop-dusy",name:"Bishop Pass → Dusy Basin",trailhead:"South Lake",agency:"Inyo National Forest",difficulty:"hard",diffLabel:"Hard",region:"bishop",
    photo:"photos/bishop-dusy.jpg", /* Dusy Basin — Josh Steinitz/NileGuide, CC BY 2.0 (Wikimedia Commons) */
    coords:[37.1689,-118.5644],
-   miles:22,gain:3800,nights:3,maxEl:11972,permitType:"Reservation",permitMechanic:"Quota trailhead",availKind:"reservation",availSpots:4,availTotal:10,snowLine:11500,snowNote:"Patchy snow above ~11,500 ft on the pass; clear below.",road:"South Lake Rd",lowTemp:28,bearCan:true,elev:[9768,10200,10800,11400,11972,11600,11100,10600,11200,11900,11200,10400,9900,9768],
-   betaHeadline:"<b>Pass is going but not fully clear.</b> Mid-July reports have one lingering snowfield on the north side of Bishop Pass — most parties cross fine in the morning, a few brought traction. Mosquitoes moderate at the Dusy lakes.",
-   snippets:[{q:"Did the pass Saturday — one firm snowfield near the top, kicked steps fine by 8am but microspikes would've been nice.",src:"r/backpacking · Jul 8"},{q:"Bugs picking up in Dusy Basin, bring a head net. Lakes still have ice on the shaded edges.",src:"AllTrails · Jul 6"}],
-   flagKit:[{name:"Microspikes",why:"snowfield reported on the pass; firm in the morning"},{name:"20°F bag",why:"forecast low of 28°F at the basin lakes"},{name:"Head net",why:"mosquitoes reported moderate at the lakes"}],
-   safety:"Bishop Pass is exposed above treeline — clear it before noon to dodge afternoon storms. Basin lakes hold ice into early July.",
-   backup:{name:"Sabrina Basin",note:"same region, no snow travel, walk-up permits available."}},
+   miles:14,gain:3000,nights:3,maxEl:11972,permitType:"Reservation",permitMechanic:"Quota trailhead",availKind:"reservation",availSpots:4,availTotal:10,snowLine:13000,snowNote:"Snow-free — Bishop Pass melted out weeks early in a record-low snow year.",road:"South Lake Rd",lowTemp:34,bearCan:true,elev:[9768,10200,10800,11400,11972,11600,11100,10600,11200,11900,11200,10400,9900,9768],
+   betaHeadline:"<b>Melted out early — the pass is bone dry.</b> It's one of the lightest snow years on record, and Bishop Pass shed its snow weeks ahead of schedule, so the crossing is straightforward walking rather than a snow climb. Plan around water and fire instead — the seasonal creeks are already dropping, and Inyo's Stage I restrictions mean a gas stove and no campfires.",
+   snippets:[{q:"Did Bishop Pass over the weekend — bone dry, never touched snow. Stupid early for this trail. Carry water up the South Lake switchbacks though, the little creeklets are already gone.",src:"r/backpacking · May 31"},{q:"Scouted up toward the Dusy lakes — the lower ones already thawing, bugs barely started. No open fires allowed this year, so it's gas-stove dinners — pack enough fuel.",src:"AllTrails · May 28"}],
+   flagKit:[{name:"Extra water capacity",why:"dry year — the upper South Lake switchbacks are running dry; carry 3L"}],
+   safety:"Bishop Pass is exposed above treeline — clear it before noon if afternoon thunderheads build. The real watch-item this year is water: top off at the last reliable creek, since the dry year has the upper switchbacks running dry.",
+   backup:{name:"Sabrina Basin",note:"same region; 10 of its 25 daily permits release online two weeks out."}},
 
   {id:"little-lakes",name:"Little Lakes Valley",trailhead:"Mosquito Flat",agency:"Inyo National Forest",difficulty:"easy",diffLabel:"Easy",region:"bishop",
    photo:"photos/little-lakes.jpg", /* Little Lakes Valley — Jeffrey Pang, CC BY 2.0 (Wikimedia Commons) */
    coords:[37.4356,-118.7486],
-   miles:14,gain:1100,nights:2,maxEl:11200,permitType:"Reservation",permitMechanic:"High-demand trailhead",availKind:"reservation",availSpots:2,availTotal:8,snowLine:11500,snowNote:"Below snow line the whole route — clear and dry.",road:"Rock Creek Rd",lowTemp:34,bearCan:true,elev:[10250,10400,10550,10700,10850,11000,11200,11050,10800,10500,10350,10250],
-   betaHeadline:"<b>Prime and busy.</b> Trail is dry and in great shape; the catch is parking and permits, not conditions. Get to Mosquito Flat early — the lot fills by 7am on weekends.",
-   snippets:[{q:"Lot was full by 6:45 Saturday. Trail itself is perfect right now, wildflowers peaking.",src:"AllTrails · Jul 11"},{q:"Easiest high-alpine payoff in the Sierra. Took the kids, no snow, no drama.",src:"r/CampingandHiking · Jul 9"}],
+   miles:10,gain:1100,nights:2,maxEl:11000,permitType:"Reservation",permitMechanic:"High-demand trailhead",availKind:"reservation",availSpots:2,availTotal:8,snowLine:11500,snowNote:"Snow's gone early this year — clear and dry start to finish.",road:"Rock Creek Rd",lowTemp:34,bearCan:true,elev:[10250,10400,10550,10700,10850,10950,11000,10900,10750,10550,10350,10250],
+   betaHeadline:"<b>Already prime — and already busy.</b> The trail melted out early and it's dry and gorgeous start to finish, so the only real catch is logistics, not conditions. Mosquito Flat is the highest trailhead in the Sierra and the lot fills by 7am on weekends, with reservation permits going fast — but with the snow gone, the walking is pure payoff.",
+   snippets:[{q:"Walked in over the weekend — bone dry, wildflowers already starting, not a patch of snow. Lot was full by 6:45 even this early, so get there at dawn.",src:"AllTrails · May 31"},{q:"Easiest high-alpine payoff in the Sierra, and it's already in. Took the kids, no snow, no drama. Bring plenty of water — the year's running dry.",src:"r/CampingandHiking · May 27"}],
    flagKit:[],
-   safety:"Gentle grade from the highest trailhead in the Sierra — strong day-one acclimatization. Storms still build over the Mono Divide by afternoon.",
-   backup:{name:"Hilton Lakes",note:"adjacent drainage, lower traffic, walk-up availability."}},
+   safety:"Gentle grade from the highest trailhead in the Sierra — a strong day-one acclimatization base. Afternoon thunderheads can still build over the Mono Divide, and with fire restrictions on it's stoves only, no campfires at the lakes.",
+   backup:{name:"Hilton Lakes",note:"adjacent drainage, quieter, better last-minute permit odds."}},
 
   {id:"big-pine",name:"Big Pine Lakes (North Fork)",trailhead:"Big Pine Creek",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
    photo:"photos/big-pine.jpg", /* Second Lake, Big Pine Creek — Jim Morefield, CC BY-SA 2.0 (Wikimedia Commons) */
    coords:[37.1247,-118.4419],
-   miles:17,gain:2700,nights:2,maxEl:11000,permitType:"Reservation",permitMechanic:"Quota trailhead",availKind:"reservation",availSpots:6,availTotal:12,snowLine:11500,snowNote:"Below snow line — glacial lakes fully thawed.",road:"Glacier Lodge Rd",lowTemp:33,bearCan:true,elev:[7800,8400,9100,9700,10200,10600,11000,10700,10300,9600,8800,7800],
-   betaHeadline:"<b>Turquoise lakes are in.</b> The glacial lakes have thawed to full color. The early North Fork climb is hot and exposed — every recent report says start before sunrise.",
-   snippets:[{q:"Second Lake is unreal right now, that glacier-milk blue. The climb up is a furnace though, leave at dawn.",src:"r/backpacking · Jul 10"},{q:"Water flowing at all the crossings, no issues. Bear box at the trailhead was full, bring your can.",src:"AllTrails · Jul 7"}],
-   flagKit:[],
-   safety:"The early grind up the North Fork is hot and exposed — start early, carry water from the first crossing.",
+   miles:15,gain:3500,nights:2,maxEl:10600,permitType:"Reservation",permitMechanic:"Quota trailhead",availKind:"reservation",availSpots:6,availTotal:12,snowLine:11500,snowNote:"Melted out early — lower lakes thawed and turning turquoise.",road:"Glacier Lodge Rd",lowTemp:33,bearCan:true,elev:[7800,8400,9000,9500,10000,10400,10600,10400,10000,9300,8500,7800],
+   betaHeadline:"<b>Turquoise lakes, brutal climb.</b> The North Fork's glacier-fed lakes get their milky blue from rock flour, so they're already turning color regardless of the light snow year. The catch is the climb to reach them — hot, exposed, and bone dry right now, so every report says start at dawn and carry water from the first crossing.",
+   snippets:[{q:"Second Lake is already turning that glacier-milk blue — gorgeous. The North Fork climb is a furnace though, and the year's so dry I'd carry water from the trailhead. Left at first light, no regrets.",src:"r/backpacking · Jun 1"},{q:"Lower crossings still running but lighter than usual for this early. Bear box at the trailhead was full — bring your own can.",src:"AllTrails · May 29"}],
+   flagKit:[{name:"Extra water capacity",why:"hot, exposed climb in a dry year — carry from the first crossing"}],
+   safety:"The early grind up the North Fork is hot and fully exposed — start at dawn and carry water from the first crossing, since the dry year has the lower creeks running thin. Stage I fire restrictions are in effect: gas stove only.",
    backup:{name:"South Fork Big Pine",note:"same trailhead permit, quieter lakes."}},
 
   {id:"cottonwood",name:"Cottonwood Lakes",trailhead:"Cottonwood Lakes",agency:"Inyo National Forest",difficulty:"easy",diffLabel:"Easy",region:"lonepine",
    photo:"photos/cottonwood.jpg", /* Cottonwood Lakes / Cirque Peak — Marty B, CC BY-SA 2.0 (Wikimedia Commons) */
    coords:[36.4528,-118.1697],
-   miles:12,gain:1500,nights:2,maxEl:11200,permitType:"Reservation",permitMechanic:"Gateway to Whitney zone (separate permit)",availKind:"reservation",availSpots:5,availTotal:10,snowLine:11500,snowNote:"Below snow line — golden-trout lakes clear.",road:"Horseshoe Meadows Rd",lowTemp:30,bearCan:true,elev:[10040,10300,10600,10900,11100,11200,11050,10800,10500,10200,10040],
-   betaHeadline:"<b>High, dry, gentle.</b> A favorite acclimatization base before bigger objectives. Recent reports are uniformly easy — clear trail, good fishing, cold nights.",
-   snippets:[{q:"Used it to acclimate before Langley. Lakes are clear, golden trout everywhere, nights are cold for July.",src:"r/14ers · Jul 9"},{q:"Mellow and beautiful. Note the Whitney zone needs its own permit if you're continuing.",src:"AllTrails · Jul 5"}],
-   flagKit:[{name:"30°F bag",why:"forecast low of 30°F — colder than typical July at this elevation"}],
-   safety:"High, dry, and gentle — excellent first-night base. Continuing to Mt. Whitney needs a separate Whitney Zone permit.",
-   backup:{name:"Horseshoe Meadow / Trail Pass",note:"same road, lower quota pressure, walk-up friendly."}},
+   miles:12,gain:1500,nights:2,maxEl:11200,permitType:"Reservation",permitMechanic:"Gateway to Whitney zone (separate permit)",availKind:"reservation",availSpots:5,availTotal:10,snowLine:11500,snowNote:"Melted out early — golden-trout lakes clear and open.",road:"Horseshoe Meadows Rd",lowTemp:34,bearCan:true,elev:[10040,10300,10600,10900,11100,11200,11050,10800,10500,10200,10040],
+   betaHeadline:"<b>High, dry, gentle — and open early.</b> The classic acclimatization base before Whitney or Langley is already snow-free, with clear trail and golden trout in the lakes. It's an easy walk this year; just plan for a dry, exposed approach, and remember the Whitney Zone needs its own permit if you push on.",
+   snippets:[{q:"Used it to acclimate before Langley last week — lakes already clear, golden trout everywhere. Trail's bone dry and the road's open. Mellow as ever.",src:"r/14ers · May 29"},{q:"Beautiful and easy, already melted out. Heads up the Whitney Zone needs its own permit if you're continuing — stoves only right now, no fires.",src:"AllTrails · Jun 1"}],
+   flagKit:[],
+   safety:"High, dry, and gentle — an excellent first-night acclimatization base. Continuing to Mt. Whitney needs a separate Whitney Zone permit, and with the dry year, Stage I restrictions mean stove-only cooking.",
+   backup:{name:"Horseshoe Meadow / Trail Pass",note:"same road, lower quota pressure, easier last-minute permits."}},
 
   {id:"sabrina",name:"Sabrina Basin",trailhead:"Lake Sabrina",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
    photo:"photos/sabrina.jpg", /* Blue Lake, Sabrina Basin — Jeffrey Pang, CC BY 2.0 (Wikimedia Commons) */
    coords:[37.2125,-118.6125],
-   miles:16,gain:2400,nights:2,maxEl:11100,permitType:"Walk-up quota",permitMechanic:"Quota trailhead — ~10 walk-up spots/day",availKind:"walkup",availSpots:null,availTotal:null,snowLine:11500,snowNote:"Below snow line — basin lakes clear.",road:"Lake Sabrina Rd",lowTemp:32,bearCan:true,elev:[9080,9500,10000,10500,10900,11100,10800,10400,9900,9400,9080],
-   betaHeadline:"<b>The reliable walk-up.</b> When the reservation trailheads are booked, this is the move — same alpine character, no lottery. Recent reports are clean and quiet.",
-   snippets:[{q:"Walked up Friday, got the permit no problem at the ranger station. Basin was nearly empty.",src:"r/backpacking · Jul 11"},{q:"Blue Lake and Dingleberry are gorgeous and uncrowded. Solid plan B that's really a plan A.",src:"AllTrails · Jul 8"}],
+   miles:13,gain:2400,nights:2,maxEl:11100,permitType:"Walk-up quota",permitMechanic:"25/day quota — 10 spots release online 2 weeks out",availKind:"walkup",availSpots:null,availTotal:null,snowLine:11500,snowNote:"Snow gone early — basin lakes thawing out.",road:"Lake Sabrina Rd",lowTemp:32,bearCan:true,elev:[9080,9500,10000,10500,10900,11100,10800,10400,9900,9400,9080],
+   betaHeadline:"<b>The dependable fallback.</b> When the reservation trailheads are booked solid, Sabrina is the move — a third of its daily permits release online exactly two weeks out, so it's predictable instead of a six-month scramble. Same alpine character, and the basin melted out early like everywhere else this year.",
+   snippets:[{q:"Snagged a Sabrina permit the morning it dropped — the two-weeks-out release is so much saner than the reservation lottery. Basin was nearly empty and already snow-free.",src:"r/backpacking · May 30"},{q:"Blue Lake and Dingleberry are gorgeous and quiet. A solid plan B that's really a plan A. Bone dry already, and it's stove-only this year — no campfires.",src:"AllTrails · May 27"}],
    flagKit:[],
-   safety:"A reliable fallback when reservation trailheads are booked. Storms build fast over the crest — plan pass time before noon.",
-   backup:{name:"Tyee Lakes",note:"adjacent, also walk-up, even quieter."}}
+   safety:"A reliable fallback when the reservation trailheads are booked. Storms build fast over the crest, so plan to be off exposed ground before noon — and with fire restrictions on, it's stove-only cooking.",
+   backup:{name:"Tyee Lakes",note:"adjacent drainage, same two-weeks-out release, even quieter."}}
 ];
 const BASE_KIT=["Shelter","Sleeping pad","Stove + fuel","Water filter","Headlamp","Map + compass","First-aid","Rain shell","Insulating layer","Sun protection","Trekking poles"];
 const $=s=>document.querySelector(s);
@@ -366,7 +365,7 @@ function bigProfile(data){
 function permitAvail(r){
   if(r.availKind==="walkup")return `<div class="avail"><span class="dot g"></span><span>Permit required · ~10 walk-up spots/day, released ~2 weeks out on Recreation.gov</span></div>`;
   const pct=Math.round(r.availSpots/r.availTotal*100),low=r.availSpots<=2;
-  return `<div class="avail"><span class="dot ${low?'w':'g'}"></span><span><b>${r.availSpots} of ${r.availTotal}</b> spots for ${TODAY}</span><span class="bar"><i style="width:${pct}%;background:${low?'var(--flag)':'var(--good)'}"></i></span></div>`;
+  return `<div class="avail"><span class="dot ${low?'w':'g'}"></span><span><b>${r.availSpots} of ${r.availTotal}</b> spots open now</span><span class="bar"><i style="width:${pct}%;background:${low?'var(--flag)':'var(--good)'}"></i></span></div>`;
 }
 
 function kitHTML(r){
@@ -456,7 +455,7 @@ window.openRoute=function(id){
         <div style="margin-top:14px">
           <div class="cond-row"><span class="ck">Snow</span><span class="cv">${r.snowNote}</span><span class="mk ${snowFlag?'w':'ok'}">${snowFlag?'flag':'clear'}</span></div>
           <div class="cond-row"><span class="ck">Access road</span><span class="cv">${r.road} — open</span><span class="mk ok">open</span></div>
-          <div class="cond-row"><span class="ck">Fire / closures</span><span class="cv">No active closures</span><span class="mk ok">clear</span></div>
+          <div class="cond-row"><span class="ck">Fire</span><span class="cv">Stage I restrictions — gas stoves OK, no open campfires</span><span class="mk w">Stage I</span></div>
           <div class="cond-row"><span class="ck">Forecast low</span><span class="cv">${r.lowTemp}°F at camp</span><span class="mk ${r.lowTemp<32?'w':'ok'}">${r.lowTemp<32?'cold':'mild'}</span></div>
         </div>
       </div>
@@ -476,7 +475,7 @@ window.openRoute=function(id){
       </div>
     </div>
     <div class="exits">
-      <a class="exit primary" href="https://www.recreation.gov" target="_blank" rel="noopener">
+      <a class="exit" href="https://www.recreation.gov" target="_blank" rel="noopener">
         <span class="et">${r.availKind==='walkup'?'Check walk-up permit':'Reserve permit'} <span class="arr">→</span></span>
         <span class="ed">${r.availKind==='walkup'?'Walk-up quota · Recreation.gov, ~2 weeks out':'Opens on Recreation.gov'}</span>
       </a>
