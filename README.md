@@ -16,7 +16,7 @@ When your search includes constraints, Cairn filters the route set and reflects 
 - Planning starts from trip intent, not tab-hopping between permit sites and forums
 - Natural-language input lets you describe a trip the way you'd tell a friend
 - Every route bundles the decisions that actually matter: permits, conditions, gear, and navigation
-- Everything runs in the browser — no account, no backend, instant GPX export
+- Runs as a single static page — no account, no framework, instant GPX export — plus one serverless function for live conditions
 
 ## Features
 
@@ -24,7 +24,7 @@ When your search includes constraints, Cairn filters the route set and reflects 
 - **"Understood as" constraints** — See exactly how your search was parsed, and remove any constraint with a tap
 - **Curated Sierra routes** — Five hand-built Eastern Sierra trips, from easy lake basins to strenuous passes
 - **Recent beta** — A plain-language conditions summary plus representative trip-report snippets for each route
-- **Conditions readout** — Inline elevation profile, snow status, access-road status, fire restrictions, and forecast lows
+- **Conditions readout** — Inline elevation profile, snow status, access-road status, fire restrictions, and live NOAA forecasts: overnight lows at trailhead-grid elevation, a multi-day outlook, and active NWS alerts for the Eastern Sierra zone
 - **Permit details** — Type, agency, mechanic, and availability, with a direct link to Recreation.gov
 - **Condition-tuned packing list** — Regulation-required items, condition-driven add-ons (e.g., extra water in a dry year), and a standard base kit
 - **Safety & backup** — Route-specific safety notes and a fallback trailhead if permits fall through
@@ -41,7 +41,7 @@ When your search includes constraints, Cairn filters the route set and reflects 
 
 ## Getting started
 
-No build step — Cairn AI is a single self-contained static HTML file.
+No build step — Cairn AI is a single self-contained static HTML file plus one serverless function.
 
 ```bash
 # Open it directly in a browser:
@@ -51,12 +51,16 @@ open index.html
 python3 -m http.server 8000   # then visit http://localhost:8000
 ```
 
-Deployed on Vercel as a static site.
+Opened locally, the page falls back to its curated conditions snapshot — the live
+NOAA readout comes from `api/conditions.js`, which runs when deployed on Vercel
+(static site + serverless function, with 30-minute edge caching so NOAA sees a
+handful of requests per half hour regardless of traffic).
 
 ## Tech Stack
 
 - Vanilla HTML, CSS, and JavaScript — single self-contained file, no framework
-- No build step, no dependencies, no backend
+- No build step, no dependencies; one Vercel serverless function (`api/conditions.js`)
+- Live forecasts & alerts from NOAA/NWS (`api.weather.gov` — free public data, edge-cached 30 min)
 - Inline SVG for the elevation profiles and logo
 - Google Fonts (Fraunces, Spline Sans, Spline Sans Mono)
 - Locally hosted trailhead photos (Wikimedia Commons, attributed in-app)
@@ -66,12 +70,22 @@ Deployed on Vercel as a static site.
 
 ## Current Scope
 
-**Cairn AI is an illustrative concept.** The substance is grounded in real data — real trails, trailhead elevations and profiles (cross-referenced with AllTrails), Inyo National Forest permit mechanics, the record-low 2026 snow year, and Stage I fire restrictions. The live plumbing, however, is simulated:
+Cairn mixes live data with curated content, and labels which is which.
+
+**Live:**
+
+- Forecast lows, multi-day outlook, and active NWS alerts — pulled from NOAA per trailhead, refreshed on load (30-min edge cache)
+
+**Real, curated by hand:**
+
+- Trails, trailhead elevations, and profiles (cross-referenced with AllTrails), Inyo National Forest permit mechanics, the record-low 2026 snow year, Stage I fire restrictions
+
+**Still simulated:**
 
 - Permit availability counts are static, not a live Recreation.gov feed
-- Trip-report snippets are representative, not scraped from real platforms
-- The natural-language search is a keyword/regex parser, not a large language model
-- Conditions are a fixed snapshot in time, not auto-updating
+- Trip-report snippets are representative, not pulled from real platforms
+- The natural-language search is a keyword/regex parser — swapping in a real LLM is next on the roadmap
+- Snow, road, and fire status lines are a curated snapshot
 - GPX tracks are synthesized from the real trailhead and elevation profile — anchored in the right valley, but not survey-grade
 
 Geographic focus is the Eastern Sierra — the **Bishop** and **Lone Pine** areas (Inyo National Forest) — across five routes.

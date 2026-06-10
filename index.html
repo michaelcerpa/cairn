@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cairn - Sierra backcountry beta</title>
-<meta name="description" content="The current beta for multi-day Sierra trips - permits, conditions, packing lists, and GPX files. Natural-language search and exportable GPX. Illustrative concept by Michael Cerpa.">
+<meta name="description" content="The current beta for multi-day Sierra trips - permits, live NOAA conditions, packing lists, and GPX files. By Michael Cerpa.">
 <meta name="theme-color" content="#f4f1ea">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -264,7 +264,7 @@
     <div class="detail-card" id="detailCard"></div>
   </div>
 
-  <footer id="foot">Cairn · Illustrative concept by Michael Cerpa<br>
+  <footer id="foot">Cairn · by Michael Cerpa · Forecast &amp; alerts: live NOAA/NWS data · Routes: curated · Permit counts &amp; trip reports: illustrative<br>
     <span style="opacity:.7;font-size:9.5px">Trailhead photos via Wikimedia Commons — Dusy Basin © Josh Steinitz/NileGuide (CC BY 2.0) · Little Lakes Valley &amp; Sabrina Basin © Jeffrey Pang (CC BY 2.0) · Big Pine Lakes © Jim Morefield (CC BY-SA 2.0) · Cottonwood Lakes © Marty B (CC BY-SA 2.0).</span></footer>
 </div>
 
@@ -327,6 +327,20 @@ const ROUTES=[
 ];
 const BASE_KIT=["Shelter","Sleeping pad","Stove + fuel","Water filter","Headlamp","Map + compass","First-aid","Rain shell","Insulating layer","Sun protection","Trekking poles"];
 const $=s=>document.querySelector(s);
+
+/* Live conditions — /api/conditions proxies NOAA per trailhead (see api/conditions.js).
+   If the fetch fails (running from file://, API down), LIVE stays null and the
+   detail view renders the curated static snapshot instead. */
+let LIVE=null,CURRENT=null;
+fetch("/api/conditions").then(r=>r.ok?r.json():null).then(d=>{
+  if(!d||!d.trailheads)return;
+  LIVE=d;
+  if(CURRENT&&$("#detail").classList.contains("show"))openRoute(CURRENT); // refresh an already-open detail
+}).catch(()=>{});
+function timeAgo(iso){
+  const m=Math.max(0,Math.round((Date.now()-new Date(iso))/60000));
+  return m<1?"just now":m<60?`${m}m ago`:`${Math.round(m/60)}h ago`;
+}
 
 function tileTag(r){
   if(r.availKind==="walkup")return `<span class="tile-tag walk">walk-up</span>`;
@@ -445,8 +459,26 @@ window.downloadGPX=function(id){
   setTimeout(()=>URL.revokeObjectURL(url),100);
 };
 
+/* Conditions rows that depend on forecast: live NOAA data when we have it,
+   the curated static snapshot when we don't. */
+function forecastRows(r,live){
+  if(!live){
+    return `<div class="cond-row"><span class="ck">Forecast low</span><span class="cv">${r.lowTemp}°F at camp</span><span class="mk ${r.lowTemp<32?'w':'ok'}">${r.lowTemp<32?'cold':'mild'}</span></div>`;
+  }
+  const lo=live.low,elev=live.gridElevFt?` near ${live.gridElevFt.toLocaleString()}′`:"";
+  const shown=[live.periods[0],...live.periods.slice(1).filter(p=>p.isDaytime)].slice(0,3);
+  let h=`<div class="cond-row"><span class="ck">Forecast low</span><span class="cv">${lo!==null?`${lo}°F next two nights${elev}`:"—"}</span><span class="mk ${lo!==null&&lo<32?'w':'ok'}">${lo!==null&&lo<32?'cold':'mild'}</span></div>`;
+  h+=`<div class="cond-row"><span class="ck">Outlook</span><span class="cv">${shown.map(p=>`<b>${p.name}</b> ${p.tempF}° ${p.short}`).join(" · ")}</span></div>`;
+  const al=LIVE.alerts||[];
+  h+=al.length
+    ?`<div class="cond-row"><span class="ck">NWS alerts</span><span class="cv">${al.map(a=>a.event).join(" · ")}</span><span class="mk w">active</span></div>`
+    :`<div class="cond-row"><span class="ck">NWS alerts</span><span class="cv">None active for the Eastern Sierra zone</span><span class="mk ok">clear</span></div>`;
+  return h;
+}
+
 window.openRoute=function(id){
-  const r=ROUTES.find(x=>x.id===id),snowFlag=r.maxEl>r.snowLine;
+  CURRENT=id;
+  const r=ROUTES.find(x=>x.id===id),snowFlag=r.maxEl>r.snowLine,live=LIVE&&LIVE.trailheads[r.id];
   $("#detailCard").innerHTML=`
     <div class="detail-hero">
       <div class="dname">${r.name}<span class="badge ${r.difficulty}">${r.diffLabel}</span></div>
@@ -465,13 +497,13 @@ window.openRoute=function(id){
         <div style="margin-top:12px">${r.snippets.map(s=>`<div class="snippet"><span class="q">"${s.q}"</span><span class="src">${s.src}</span></div>`).join("")}</div>
       </div>
       <div class="block">
-        <div class="block-h"><span class="diamond"></span><span class="t">Conditions</span><span class="when">as of ${TODAY}</span></div>
+        <div class="block-h"><span class="diamond"></span><span class="t">Conditions</span><span class="when">${live?`NOAA forecast · updated ${timeAgo(LIVE.fetchedAt)}`:`as of ${TODAY}`}</span></div>
         <div class="profile-cap">Elevation profile</div>${bigProfile(r.elev)}
         <div style="margin-top:14px">
           <div class="cond-row"><span class="ck">Snow</span><span class="cv">${r.snowNote}</span><span class="mk ${snowFlag?'w':'ok'}">${snowFlag?'flag':'clear'}</span></div>
           <div class="cond-row"><span class="ck">Access road</span><span class="cv">${r.road} — open</span><span class="mk ok">open</span></div>
           <div class="cond-row"><span class="ck">Fire</span><span class="cv">Stage I restrictions — gas stoves OK, no open campfires</span><span class="mk w">Stage I</span></div>
-          <div class="cond-row"><span class="ck">Forecast low</span><span class="cv">${r.lowTemp}°F at camp</span><span class="mk ${r.lowTemp<32?'w':'ok'}">${r.lowTemp<32?'cold':'mild'}</span></div>
+          ${forecastRows(r,live)}
         </div>
       </div>
       <div class="block">
@@ -520,7 +552,7 @@ window.openPack=function(id){
 window.closePack=function(){$("#scrim").classList.remove("show");document.body.style.overflow="";};
 $("#scrim").addEventListener("click",e=>{if(e.target===$("#scrim"))closePack();});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closePack();});
-$("#backBtn").addEventListener("click",()=>{$("#detail").classList.remove("show");$("#home").style.display="";$("#foot").style.display="";window.scrollTo({top:0,behavior:"smooth"});});
+$("#backBtn").addEventListener("click",()=>{CURRENT=null;$("#detail").classList.remove("show");$("#home").style.display="";$("#foot").style.display="";window.scrollTo({top:0,behavior:"smooth"});});
 
 /* Display-only timeframe parser: recognizes months ("July"), seasons
    ("this summer"), and relative phrases ("this weekend", "next month",
