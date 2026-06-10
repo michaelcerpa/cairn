@@ -146,9 +146,21 @@
   .avail{display:flex;align-items:center;gap:9px;font-size:13.5px;margin-top:13px;padding:10px 13px;border-radius:9px;background:#fff;border:1px solid var(--line)}
   .avail .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
   .dot.g{background:var(--good)}.dot.w{background:var(--flag)}
-  .avail .bar{flex:1;height:6px;border-radius:3px;background:#eee;overflow:hidden;max-width:130px}
-  .avail .bar i{display:block;height:100%;border-radius:3px}
-  .avail b{font-weight:600}
+  .avail a{color:var(--accent)}
+
+  /* live permit strip — one cell per day, count = bookable online now */
+  .pstrip-cap{font-family:'Spline Sans Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);margin:14px 0 7px}
+  .pstrip{display:grid;grid-template-columns:repeat(14,1fr);gap:3px}
+  .pday{display:flex;flex-direction:column;align-items:center;gap:0;padding:6px 2px 5px;border-radius:7px;border:1px solid var(--line);background:#fff;min-width:0}
+  .pday .pd-dow{font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint)}
+  .pday .pd-num{font-family:'Spline Sans Mono',monospace;font-size:10px;color:var(--ink-soft)}
+  .pday .pd-rem{font-family:'Spline Sans Mono',monospace;font-size:13.5px;font-weight:500;margin-top:3px}
+  .pday.p-ok .pd-rem{color:var(--good)}
+  .pday.p-low{background:var(--flag-bg);border-color:#ecdfc2}.pday.p-low .pd-rem{color:var(--flag)}
+  .pday.p-zero{background:#f8eeeb;border-color:#e8cfc7}.pday.p-zero .pd-rem{color:var(--bad)}
+  .pday.p-na .pd-rem{color:var(--ink-faint)}
+  .pstrip-note{font-size:12px;color:var(--ink-soft);margin-top:9px;line-height:1.45}
+  @media(max-width:580px){.pstrip{grid-template-columns:repeat(7,1fr)}}
 
   .cond-row{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13.5px;border-bottom:1px dashed var(--line)}
   .cond-row:last-child{border-bottom:none}
@@ -264,7 +276,7 @@
     <div class="detail-card" id="detailCard"></div>
   </div>
 
-  <footer id="foot">Cairn · by Michael Cerpa · Forecast &amp; alerts: live NOAA/NWS data · Routes: curated · Permit counts &amp; trip reports: illustrative<br>
+  <footer id="foot">Cairn · by Michael Cerpa · Forecast, alerts &amp; permit availability: live (NOAA · Recreation.gov) · Routes: curated · Trip reports: illustrative<br>
     <span style="opacity:.7;font-size:9.5px">Trailhead photos via Wikimedia Commons — Dusy Basin © Josh Steinitz/NileGuide (CC BY 2.0) · Little Lakes Valley &amp; Sabrina Basin © Jeffrey Pang (CC BY 2.0) · Big Pine Lakes © Jim Morefield (CC BY-SA 2.0) · Cottonwood Lakes © Marty B (CC BY-SA 2.0).</span></footer>
 </div>
 
@@ -278,7 +290,7 @@ const ROUTES=[
   {id:"bishop-dusy",name:"Bishop Pass → Dusy Basin",trailhead:"South Lake",agency:"Inyo National Forest",difficulty:"hard",diffLabel:"Hard",region:"bishop",
    photo:"photos/bishop-dusy.jpg", /* Dusy Basin — Josh Steinitz/NileGuide, CC BY 2.0 (Wikimedia Commons) */
    coords:[37.1689,-118.5644],
-   miles:14,gain:3000,nights:3,maxEl:11972,permitType:"Reservation",permitMechanic:"Quota trailhead",availKind:"reservation",availSpots:4,availTotal:10,snowLine:13000,snowNote:"Snow-free — Bishop Pass melted out weeks early in a record-low snow year.",road:"South Lake Rd",lowTemp:34,bearCan:true,elev:[9768,10200,10800,11400,11972,11600,11100,10600,11200,11900,11200,10400,9900,9768],
+   miles:14,gain:3000,nights:3,maxEl:11972,permitType:"Reservation",permitMechanic:"Quota trailhead",snowLine:13000,snowNote:"Snow-free — Bishop Pass melted out weeks early in a record-low snow year.",road:"South Lake Rd",lowTemp:34,bearCan:true,elev:[9768,10200,10800,11400,11972,11600,11100,10600,11200,11900,11200,10400,9900,9768],
    betaHeadline:"<b>Melted out early — the pass is bone dry.</b> It's one of the lightest snow years on record, and Bishop Pass shed its snow weeks ahead of schedule, so the crossing is straightforward walking rather than a snow climb. Plan around water and fire instead — the seasonal creeks are already dropping, and Inyo's Stage I restrictions mean a gas stove and no campfires.",
    snippets:[{q:"Did Bishop Pass over the weekend — bone dry, never touched snow. Stupid early for this trail. Carry water up the South Lake switchbacks though, the little creeklets are already gone.",src:"r/backpacking · May 31"},{q:"Scouted up toward the Dusy lakes — the lower ones already thawing, bugs barely started. No open fires allowed this year, so it's gas-stove dinners — pack enough fuel.",src:"AllTrails · May 28"}],
    flagKit:[{name:"Extra water capacity",why:"dry year — the upper South Lake switchbacks are running dry; carry 3L"}],
@@ -288,7 +300,7 @@ const ROUTES=[
   {id:"little-lakes",name:"Little Lakes Valley",trailhead:"Mosquito Flat",agency:"Inyo National Forest",difficulty:"easy",diffLabel:"Easy",region:"bishop",
    photo:"photos/little-lakes.jpg", /* Little Lakes Valley — Jeffrey Pang, CC BY 2.0 (Wikimedia Commons) */
    coords:[37.4356,-118.7486],
-   miles:10,gain:1100,nights:2,maxEl:11000,permitType:"Reservation",permitMechanic:"High-demand trailhead",availKind:"reservation",availSpots:2,availTotal:8,snowLine:11500,snowNote:"Snow's gone early this year — clear and dry start to finish.",road:"Rock Creek Rd",lowTemp:34,bearCan:true,elev:[10250,10400,10550,10700,10850,10950,11000,10900,10750,10550,10350,10250],
+   miles:10,gain:1100,nights:2,maxEl:11000,permitType:"Reservation",permitMechanic:"High-demand trailhead",snowLine:11500,snowNote:"Snow's gone early this year — clear and dry start to finish.",road:"Rock Creek Rd",lowTemp:34,bearCan:true,elev:[10250,10400,10550,10700,10850,10950,11000,10900,10750,10550,10350,10250],
    betaHeadline:"<b>Already prime — and already busy.</b> The trail melted out early and it's dry and gorgeous start to finish, so the only real catch is logistics, not conditions. Mosquito Flat is the highest trailhead in the Sierra and the lot fills by 7am on weekends, with reservation permits going fast — but with the snow gone, the walking is pure payoff.",
    snippets:[{q:"Walked in over the weekend — bone dry, wildflowers already starting, not a patch of snow. Lot was full by 6:45 even this early, so get there at dawn.",src:"AllTrails · May 31"},{q:"Easiest high-alpine payoff in the Sierra, and it's already in. Took the kids, no snow, no drama. Bring plenty of water — the year's running dry.",src:"r/CampingandHiking · May 27"}],
    flagKit:[],
@@ -298,7 +310,7 @@ const ROUTES=[
   {id:"big-pine",name:"Big Pine Lakes (North Fork)",trailhead:"Big Pine Creek",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
    photo:"photos/big-pine.jpg", /* Second Lake, Big Pine Creek — Jim Morefield, CC BY-SA 2.0 (Wikimedia Commons) */
    coords:[37.1247,-118.4419],
-   miles:15,gain:3500,nights:2,maxEl:10600,permitType:"Reservation",permitMechanic:"Quota trailhead",availKind:"reservation",availSpots:6,availTotal:12,snowLine:11500,snowNote:"Melted out early — lower lakes thawed and turning turquoise.",road:"Glacier Lodge Rd",lowTemp:33,bearCan:true,elev:[7800,8400,9000,9500,10000,10400,10600,10400,10000,9300,8500,7800],
+   miles:15,gain:3500,nights:2,maxEl:10600,permitType:"Reservation",permitMechanic:"Quota trailhead",snowLine:11500,snowNote:"Melted out early — lower lakes thawed and turning turquoise.",road:"Glacier Lodge Rd",lowTemp:33,bearCan:true,elev:[7800,8400,9000,9500,10000,10400,10600,10400,10000,9300,8500,7800],
    betaHeadline:"<b>Turquoise lakes, brutal climb.</b> The North Fork's glacier-fed lakes get their milky blue from rock flour, so they're already turning color regardless of the light snow year. The catch is the climb to reach them — hot, exposed, and bone dry right now, so every report says start at dawn and carry water from the first crossing.",
    snippets:[{q:"Second Lake is already turning that glacier-milk blue — gorgeous. The North Fork climb is a furnace though, and the year's so dry I'd carry water from the trailhead. Left at first light, no regrets.",src:"r/backpacking · Jun 1"},{q:"Lower crossings still running but lighter than usual for this early. Bear box at the trailhead was full — bring your own can.",src:"AllTrails · May 29"}],
    flagKit:[{name:"Extra water capacity",why:"hot, exposed climb in a dry year — carry from the first crossing"}],
@@ -308,7 +320,7 @@ const ROUTES=[
   {id:"cottonwood",name:"Cottonwood Lakes",trailhead:"Cottonwood Lakes",agency:"Inyo National Forest",difficulty:"easy",diffLabel:"Easy",region:"lonepine",
    photo:"photos/cottonwood.jpg", /* Cottonwood Lakes / Cirque Peak — Marty B, CC BY-SA 2.0 (Wikimedia Commons) */
    coords:[36.4528,-118.1697],
-   miles:12,gain:1500,nights:2,maxEl:11200,permitType:"Reservation",permitMechanic:"Gateway to Whitney zone (separate permit)",availKind:"reservation",availSpots:5,availTotal:10,snowLine:11500,snowNote:"Melted out early — golden-trout lakes clear and open.",road:"Horseshoe Meadows Rd",lowTemp:34,bearCan:true,elev:[10040,10300,10600,10900,11100,11200,11050,10800,10500,10200,10040],
+   miles:12,gain:1500,nights:2,maxEl:11200,permitType:"Reservation",permitMechanic:"Gateway to Whitney zone (separate permit)",snowLine:11500,snowNote:"Melted out early — golden-trout lakes clear and open.",road:"Horseshoe Meadows Rd",lowTemp:34,bearCan:true,elev:[10040,10300,10600,10900,11100,11200,11050,10800,10500,10200,10040],
    betaHeadline:"<b>High, dry, gentle — and open early.</b> The classic acclimatization base before Whitney or Langley is already snow-free, with clear trail and golden trout in the lakes. It's an easy walk this year; just plan for a dry, exposed approach, and remember the Whitney Zone needs its own permit if you push on.",
    snippets:[{q:"Used it to acclimate before Langley last week — lakes already clear, golden trout everywhere. Trail's bone dry and the road's open. Mellow as ever.",src:"r/14ers · May 29"},{q:"Beautiful and easy, already melted out. Heads up the Whitney Zone needs its own permit if you're continuing — stoves only right now, no fires.",src:"AllTrails · Jun 1"}],
    flagKit:[],
@@ -318,7 +330,7 @@ const ROUTES=[
   {id:"sabrina",name:"Sabrina Basin",trailhead:"Lake Sabrina",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
    photo:"photos/sabrina.jpg", /* Blue Lake, Sabrina Basin — Jeffrey Pang, CC BY 2.0 (Wikimedia Commons) */
    coords:[37.2125,-118.6125],
-   miles:13,gain:2400,nights:2,maxEl:11100,permitType:"Walk-up quota",permitMechanic:"25/day quota — 10 spots release online 2 weeks out",availKind:"walkup",availSpots:null,availTotal:null,snowLine:11500,snowNote:"Snow gone early — basin lakes thawing out.",road:"Lake Sabrina Rd",lowTemp:32,bearCan:true,elev:[9080,9500,10000,10500,10900,11100,10800,10400,9900,9400,9080],
+   miles:13,gain:2400,nights:2,maxEl:11100,permitType:"Two-week release",permitMechanic:"25/day quota — 10 spots release online 2 weeks out",snowLine:11500,snowNote:"Snow gone early — basin lakes thawing out.",road:"Lake Sabrina Rd",lowTemp:32,bearCan:true,elev:[9080,9500,10000,10500,10900,11100,10800,10400,9900,9400,9080],
    betaHeadline:"<b>The dependable fallback.</b> When the reservation trailheads are booked solid, Sabrina is the move — a third of its daily permits release online exactly two weeks out, so it's predictable instead of a six-month scramble. Same alpine character, and the basin melted out early like everywhere else this year.",
    snippets:[{q:"Snagged a Sabrina permit the morning it dropped — the two-weeks-out release is so much saner than the reservation lottery. Basin was nearly empty and already snow-free.",src:"r/backpacking · May 30"},{q:"Blue Lake and Dingleberry are gorgeous and quiet. A solid plan B that's really a plan A. Bone dry already, and it's stove-only this year — no campfires.",src:"AllTrails · May 27"}],
    flagKit:[],
@@ -331,25 +343,32 @@ const $=s=>document.querySelector(s);
 /* Live conditions — /api/conditions proxies NOAA per trailhead (see api/conditions.js).
    If the fetch fails (running from file://, API down), LIVE stays null and the
    detail view renders the curated static snapshot instead. */
-let LIVE=null,CURRENT=null;
-fetch("/api/conditions").then(r=>r.ok?r.json():null).then(d=>{
-  if(!d||!d.trailheads)return;
-  LIVE=d;
+let LIVE=null,PERMITS=null,CURRENT=null,LASTLIST=null;
+function liveRefresh(){
+  renderHome(LASTLIST);                                                   // tile tags pick up live data
   if(CURRENT&&$("#detail").classList.contains("show"))openRoute(CURRENT); // refresh an already-open detail
-}).catch(()=>{});
+}
+fetch("/api/conditions").then(r=>r.ok?r.json():null).then(d=>{if(d&&d.trailheads){LIVE=d;liveRefresh();}}).catch(()=>{});
+fetch("/api/permits").then(r=>r.ok?r.json():null).then(d=>{if(d&&d.trailheads){PERMITS=d;liveRefresh();}}).catch(()=>{});
 function timeAgo(iso){
   const m=Math.max(0,Math.round((Date.now()-new Date(iso))/60000));
   return m<1?"just now":m<60?`${m}m ago`:`${Math.round(m/60)}h ago`;
 }
 
+/* Tile tag is live-only: with permit data it shows how many of the next 14 days
+   are bookable; without it, no tag — never a made-up count. */
 function tileTag(r){
-  if(r.availKind==="walkup")return `<span class="tile-tag walk">walk-up</span>`;
-  const low=r.availSpots<=2;
-  return `<span class="tile-tag res${low?' low':''}">${r.availSpots} of ${r.availTotal} permits</span>`;
+  const p=PERMITS&&PERMITS.trailheads[r.id];
+  if(!p)return "";
+  const days=p.days.filter(d=>d.remaining!==null);
+  if(!days.length)return "";
+  const open=days.filter(d=>d.remaining>0).length;
+  return `<span class="tile-tag res${open<=4?' low':''}">permits ${open} of ${days.length} days</span>`;
 }
 
 function renderHome(list){
-  $("#grid").innerHTML=(list||ROUTES).map(r=>`
+  LASTLIST=list||ROUTES;
+  $("#grid").innerHTML=LASTLIST.map(r=>`
     <div class="tile" onclick="openRoute('${r.id}')">
       <div class="tile-visual">
         <img src="${r.photo}" alt="" loading="lazy" onerror="this.remove()">
@@ -391,10 +410,23 @@ function bigProfile(data){
   `;
 }
 
+/* Live permit strip — one cell per day, value = overnight spots bookable online
+   right now (Recreation.gov). If the API is down: honest fallback, no numbers. */
 function permitAvail(r){
-  if(r.availKind==="walkup")return `<div class="avail"><span class="dot g"></span><span>Permit required · ~10 walk-up spots/day, released ~2 weeks out on Recreation.gov</span></div>`;
-  const pct=Math.round(r.availSpots/r.availTotal*100),low=r.availSpots<=2;
-  return `<div class="avail"><span class="dot ${low?'w':'g'}"></span><span><b>${r.availSpots} of ${r.availTotal}</b> spots open now</span><span class="bar"><i style="width:${pct}%;background:${low?'var(--flag)':'var(--good)'}"></i></span></div>`;
+  const p=PERMITS&&PERMITS.trailheads[r.id];
+  const url=PERMITS?PERMITS.permitUrl:"https://www.recreation.gov/permits/233262";
+  if(!p)return `<div class="avail"><span class="dot w"></span><span>Live availability unavailable right now — check <a href="${url}" target="_blank" rel="noopener">Recreation.gov</a></span></div>`;
+  const DOW=["Su","Mo","Tu","We","Th","Fr","Sa"];
+  const cells=p.days.map(d=>{
+    const day=new Date(d.date+"T12:00:00");
+    const cls=d.remaining===null?"p-na":d.remaining===0?"p-zero":d.remaining<=2?"p-low":"p-ok";
+    const tip=d.remaining===null?"no data":d.total===null?"0 bookable online — sold out":`${d.remaining} of ${d.total} bookable online`;
+    return `<div class="pday ${cls}" title="${d.date}: ${tip}"><span class="pd-dow">${DOW[day.getDay()]}</span><span class="pd-num">${parseInt(d.date.slice(8),10)}</span><span class="pd-rem">${d.remaining===null?"–":d.remaining}</span></div>`;
+  }).join("");
+  const hasZero=p.days.some(d=>d.remaining===0);
+  return `<div class="pstrip-cap">Next ${p.days.length} days — overnight spots bookable online now</div>
+    <div class="pstrip">${cells}</div>
+    ${hasZero?`<div class="pstrip-note"><b>0</b> = nothing bookable online right now. Inyo releases its walk-up share online two weeks before each date, so zeros further out often reopen then.</div>`:""}`;
 }
 
 function kitHTML(r){
@@ -507,7 +539,7 @@ window.openRoute=function(id){
         </div>
       </div>
       <div class="block">
-        <div class="block-h"><span class="diamond"></span><span class="t">Permit</span></div>
+        <div class="block-h"><span class="diamond"></span><span class="t">Permit</span><span class="when">${PERMITS&&PERMITS.trailheads[r.id]?`Recreation.gov · updated ${timeAgo(PERMITS.fetchedAt)}`:""}</span></div>
         <div class="permit-grid">
           <div class="pk"><span class="k">Type</span><span class="v">${r.permitType}</span></div>
           <div class="pk"><span class="k">Agency</span><span class="v">${r.agency}</span></div>
@@ -522,9 +554,9 @@ window.openRoute=function(id){
       </div>
     </div>
     <div class="exits">
-      <a class="exit" href="https://www.recreation.gov" target="_blank" rel="noopener">
-        <span class="et">${r.availKind==='walkup'?'Check walk-up permit':'Reserve permit'} <span class="arr">→</span></span>
-        <span class="ed">${r.availKind==='walkup'?'Walk-up quota · Recreation.gov, ~2 weeks out':'Opens on Recreation.gov'}</span>
+      <a class="exit" href="${PERMITS?PERMITS.permitUrl:'https://www.recreation.gov/permits/233262'}" target="_blank" rel="noopener">
+        <span class="et">Reserve permit <span class="arr">→</span></span>
+        <span class="ed">Inyo wilderness permits · Recreation.gov</span>
       </a>
       <a class="exit" onclick="openPack('${r.id}');return false;" href="#">
         <span class="et">Get packing list <span class="arr">→</span></span>
@@ -615,8 +647,8 @@ function runSearch(text){
   else if(/hard|strenuous|tough/.test(t)){parsed.Difficulty="hard";filters.push(r=>r.difficulty==="hard");}
 
   // permit style
-  if(/walk.?up/.test(t)){parsed.Permits="walk-up";filters.push(r=>r.availKind==="walkup");}
-  else if(/available|open/.test(t)){parsed.Permits="available";filters.push(r=>r.availKind!=="full");}
+  if(/walk.?up|last.?minute/.test(t)){parsed.Permits="late release";filters.push(r=>/release/i.test(r.permitMechanic));}
+  else if(/available|open/.test(t)){parsed.Permits="available";if(PERMITS)filters.push(r=>{const p=PERMITS.trailheads[r.id];return p&&p.days.some(d=>d.remaining>0);});}
 
   // terrain
   if(/lake/.test(t)){parsed.Terrain="lakes";}

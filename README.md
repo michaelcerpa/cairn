@@ -16,7 +16,7 @@ When your search includes constraints, Cairn filters the route set and reflects 
 - Planning starts from trip intent, not tab-hopping between permit sites and forums
 - Natural-language input lets you describe a trip the way you'd tell a friend
 - Every route bundles the decisions that actually matter: permits, conditions, gear, and navigation
-- Runs as a single static page — no account, no framework, instant GPX export — plus one serverless function for live conditions
+- Runs as a single static page — no account, no framework, instant GPX export — plus two small serverless functions for live conditions and live permit availability
 
 ## Features
 
@@ -25,7 +25,7 @@ When your search includes constraints, Cairn filters the route set and reflects 
 - **Curated Sierra routes** — Five hand-built Eastern Sierra trips, from easy lake basins to strenuous passes
 - **Recent beta** — A plain-language conditions summary plus representative trip-report snippets for each route
 - **Conditions readout** — Inline elevation profile, snow status, access-road status, fire restrictions, and live NOAA forecasts: overnight lows at trailhead-grid elevation, a multi-day outlook, and active NWS alerts for the Eastern Sierra zone
-- **Permit details** — Type, agency, mechanic, and availability, with a direct link to Recreation.gov
+- **Live permit availability** — a 14-day strip of overnight spots bookable online right now, straight from Recreation.gov, with the permit type/agency/mechanic and a direct link to reserve
 - **Condition-tuned packing list** — Regulation-required items, condition-driven add-ons (e.g., extra water in a dry year), and a standard base kit
 - **Safety & backup** — Route-specific safety notes and a fallback trailhead if permits fall through
 - **GPX export** — Download a valid GPX track for Garmin Connect, Strava, Gaia GPS, and other compatible tools
@@ -41,7 +41,7 @@ When your search includes constraints, Cairn filters the route set and reflects 
 
 ## Getting started
 
-No build step — Cairn AI is a single self-contained static HTML file plus one serverless function.
+No build step — Cairn AI is a single self-contained static HTML file plus two serverless functions.
 
 ```bash
 # Open it directly in a browser:
@@ -51,16 +51,18 @@ open index.html
 python3 -m http.server 8000   # then visit http://localhost:8000
 ```
 
-Opened locally, the page falls back to its curated conditions snapshot — the live
-NOAA readout comes from `api/conditions.js`, which runs when deployed on Vercel
-(static site + serverless function, with 30-minute edge caching so NOAA sees a
-handful of requests per half hour regardless of traffic).
+Opened locally, the page falls back to its curated conditions snapshot and an
+honest "check Recreation.gov" permit panel — the live readouts come from
+`api/conditions.js` (NOAA) and `api/permits.js` (Recreation.gov), which run when
+deployed on Vercel (static site + serverless functions, 30-minute edge caching
+so the upstream APIs see a handful of requests per half hour regardless of traffic).
 
 ## Tech Stack
 
 - Vanilla HTML, CSS, and JavaScript — single self-contained file, no framework
-- No build step, no dependencies; one Vercel serverless function (`api/conditions.js`)
+- No build step, no dependencies; two Vercel serverless functions (`api/conditions.js`, `api/permits.js`)
 - Live forecasts & alerts from NOAA/NWS (`api.weather.gov` — free public data, edge-cached 30 min)
+- Live permit availability from Recreation.gov (unofficial availability API, edge-cached 30 min, honest fallback when unavailable)
 - Inline SVG for the elevation profiles and logo
 - Google Fonts (Fraunces, Spline Sans, Spline Sans Mono)
 - Locally hosted trailhead photos (Wikimedia Commons, attributed in-app)
@@ -75,6 +77,7 @@ Cairn mixes live data with curated content, and labels which is which.
 **Live:**
 
 - Forecast lows, multi-day outlook, and active NWS alerts — pulled from NOAA per trailhead, refreshed on load (30-min edge cache)
+- Overnight permit availability for the next 14 days per trailhead — from Recreation.gov's availability API (unofficial; when it's unreachable the UI says "check Recreation.gov" rather than showing numbers)
 
 **Real, curated by hand:**
 
@@ -82,7 +85,6 @@ Cairn mixes live data with curated content, and labels which is which.
 
 **Still simulated:**
 
-- Permit availability counts are static, not a live Recreation.gov feed
 - Trip-report snippets are representative, not pulled from real platforms
 - The natural-language search is a keyword/regex parser — swapping in a real LLM is next on the roadmap
 - Snow, road, and fire status lines are a curated snapshot
