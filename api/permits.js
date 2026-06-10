@@ -22,11 +22,14 @@ const HORIZON_DAYS = 14;
 
 // routeId -> recreation.gov division ("Entry Point") id
 const DIVISIONS = {
-  "bishop-dusy":  { division: "459", name: "Bishop Pass -South Lake" },
-  "little-lakes": { division: "451", name: "Little Lakes Valley" },
-  "big-pine":     { division: "495", name: "Big Pine Creek North Fork" },
-  "cottonwood":   { division: "520", name: "Cottonwood Lakes" },
-  "sabrina":      { division: "482", name: "Sabrina Lake" }
+  "bishop-dusy":      { division: "459", name: "Bishop Pass -South Lake" },
+  "little-lakes":     { division: "451", name: "Little Lakes Valley" },
+  "big-pine":         { division: "495", name: "Big Pine Creek North Fork" },
+  "cottonwood":       { division: "520", name: "Cottonwood Lakes" },
+  "sabrina":          { division: "482", name: "Sabrina Lake" },
+  "duck-pass":        { division: "444", name: "Duck Pass" },
+  "thousand-island":  { division: "435", name: "River Trail" },
+  "mammoth-tuolumne": { division: "486", name: "John Muir Trail North of Devils Postpile" }
 };
 
 // today's date parts in trailhead time (Pacific), not server UTC

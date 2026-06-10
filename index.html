@@ -137,7 +137,8 @@
   .snippet{display:flex;gap:11px;padding:11px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
   .snippet:last-child{border-bottom:none}
   .snippet .q{flex:1;color:var(--ink-soft);font-style:italic}
-  .snippet .src{font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--ink-faint);white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:2px}
+  .snippet .src{font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--ink-faint);white-space:nowrap;flex-shrink:0;align-self:flex-start;margin-top:2px;text-decoration:none}
+  a.src:hover{color:var(--accent);text-decoration:underline}
 
   .permit-grid{display:flex;flex-wrap:wrap;gap:11px 28px}
   .pk{display:flex;flex-direction:column;gap:2px}
@@ -185,10 +186,20 @@
   .base-list.show{display:flex}
   .base-list span{font-size:12px;color:var(--ink-soft);background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 9px}
 
-  .safety p{font-size:13.5px;color:var(--ink-soft);margin-bottom:11px}
-  .backup{background:#fff;border:1px dashed var(--line-strong);border-radius:10px;padding:12px 14px;font-size:13.5px}
-  .backup .bl{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:5px;font-weight:600}
-  .backup b{color:var(--accent)}
+  /* ask-about-this-route */
+  .ask-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+  .chip{border:1px solid var(--line-strong);background:#fff;border-radius:999px;padding:6px 12px;font-family:inherit;font-size:12.5px;color:var(--ink-soft);cursor:pointer;transition:all .15s}
+  .chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .ask-row{display:flex;gap:8px}
+  .ask-row input{flex:1;border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px 13px;font-family:inherit;font-size:13.5px;color:var(--ink)}
+  .ask-row input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .ask-row button{border:none;background:var(--accent);color:#fff;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;transition:background .15s}
+  .ask-row button:hover{background:#33502f}
+  .ask-row button:disabled{opacity:.6;cursor:default}
+  .ask-answer{margin-top:12px;background:var(--accent-soft);border:1px solid #d4ddd0;border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.55;white-space:pre-wrap}
+  .ask-answer.ask-off,.ask-answer.ask-loading{background:#fff;border-style:dashed;color:var(--ink-soft)}
+  .ask-answer a{color:var(--accent)}
+  .ask-meta{font-family:'Spline Sans Mono',monospace;font-size:10px;color:var(--ink-faint);margin-top:6px;letter-spacing:.03em}
 
   .exits{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:22px 26px;background:#f0ede4;border-top:1px solid var(--line)}
   .exit{border:1px solid var(--line-strong);background:var(--paper);border-radius:12px;padding:16px;cursor:pointer;text-decoration:none;transition:all .16s;display:flex;flex-direction:column;gap:4px}
@@ -250,8 +261,8 @@
         <p class="blurb">The current beta for <b>multi-day Sierra trips</b> — permits, conditions, packing lists, and GPX files.</p>
         <div class="search-card">
           <div class="search-label">Describe a trip</div>
-          <div class="search-sub">Or browse <b>5 pre-generated Sierra routes</b></div>
-          <input id="q" placeholder='e.g. "3 nights near Bishop this summer"'>
+          <div class="search-sub">Or browse <b>8 pre-generated Sierra routes</b></div>
+          <input id="q" placeholder='e.g. "3 days in Mammoth in July"'>
           <button id="goBtn">Find routes</button>
         </div>
       </aside>
@@ -276,8 +287,8 @@
     <div class="detail-card" id="detailCard"></div>
   </div>
 
-  <footer id="foot">Cairn · by Michael Cerpa · Forecast, alerts &amp; permit availability: live (NOAA · Recreation.gov) · Routes: curated · Trip reports: illustrative<br>
-    <span style="opacity:.7;font-size:9.5px">Trailhead photos via Wikimedia Commons — Dusy Basin © Josh Steinitz/NileGuide (CC BY 2.0) · Little Lakes Valley &amp; Sabrina Basin © Jeffrey Pang (CC BY 2.0) · Big Pine Lakes © Jim Morefield (CC BY-SA 2.0) · Cottonwood Lakes © Marty B (CC BY-SA 2.0).</span></footer>
+  <footer id="foot">Cairn · by Michael Cerpa · Forecast, alerts &amp; permit availability: live (NOAA · Recreation.gov) · Routes: curated · Trip reports: quoted &amp; linked from High Sierra Topix<br>
+    <span style="opacity:.7;font-size:9.5px">Trailhead photos via Wikimedia Commons — Dusy Basin © Josh Steinitz/NileGuide (CC BY 2.0) · Little Lakes Valley &amp; Sabrina Basin © Jeffrey Pang (CC BY 2.0) · Big Pine Lakes © Jim Morefield (CC BY-SA 2.0) · Cottonwood Lakes © Marty B (CC BY-SA 2.0) · Duck Pass © The Fun Chronicles (CC0) · Thousand Island Lake © Dcrjsr (CC BY 3.0) · Lyell Canyon © Kaitymh (CC BY-SA 4.0).</span></footer>
 </div>
 
 <div class="scrim" id="scrim"><div class="pack" id="packEl"></div></div>
@@ -292,50 +303,64 @@ const ROUTES=[
    coords:[37.1689,-118.5644],
    miles:14,gain:3000,nights:3,maxEl:11972,permitType:"Reservation",permitMechanic:"Quota trailhead",snowLine:13000,snowNote:"Snow-free — Bishop Pass melted out weeks early in a record-low snow year.",road:"South Lake Rd",lowTemp:34,bearCan:true,elev:[9768,10200,10800,11400,11972,11600,11100,10600,11200,11900,11200,10400,9900,9768],
    betaHeadline:"<b>Melted out early — the pass is bone dry.</b> It's one of the lightest snow years on record, and Bishop Pass shed its snow weeks ahead of schedule, so the crossing is straightforward walking rather than a snow climb. Plan around water and fire instead — the seasonal creeks are already dropping, and Inyo's Stage I restrictions mean a gas stove and no campfires.",
-   snippets:[{q:"Did Bishop Pass over the weekend — bone dry, never touched snow. Stupid early for this trail. Carry water up the South Lake switchbacks though, the little creeklets are already gone.",src:"r/backpacking · May 31"},{q:"Scouted up toward the Dusy lakes — the lower ones already thawing, bugs barely started. No open fires allowed this year, so it's gas-stove dinners — pack enough fuel.",src:"AllTrails · May 28"}],
-   flagKit:[{name:"Extra water capacity",why:"dry year — the upper South Lake switchbacks are running dry; carry 3L"}],
-   safety:"Bishop Pass is exposed above treeline — clear it before noon if afternoon thunderheads build. The real watch-item this year is water: top off at the last reliable creek, since the dry year has the upper switchbacks running dry.",
-   backup:{name:"Sabrina Basin",note:"same region; 10 of its 25 daily permits release online two weeks out."}},
+   snippets:[{q:"The melt has stalled in April. The snow line was ~8000' on North faces at the start of April, and it was about ~8500' on May 2nd. That said, the projected heatwave in mid-May should substantially open up access.",src:"High Sierra Topix · May 3",url:"https://www.highsierratopix.com/community/viewtopic.php?p=193735#p193735"}],
+   flagKit:[{name:"Extra water capacity",why:"dry year — the upper South Lake switchbacks are running dry; carry 3L"}]},
 
   {id:"little-lakes",name:"Little Lakes Valley",trailhead:"Mosquito Flat",agency:"Inyo National Forest",difficulty:"easy",diffLabel:"Easy",region:"bishop",
    photo:"photos/little-lakes.jpg", /* Little Lakes Valley — Jeffrey Pang, CC BY 2.0 (Wikimedia Commons) */
    coords:[37.4356,-118.7486],
    miles:10,gain:1100,nights:2,maxEl:11000,permitType:"Reservation",permitMechanic:"High-demand trailhead",snowLine:11500,snowNote:"Snow's gone early this year — clear and dry start to finish.",road:"Rock Creek Rd",lowTemp:34,bearCan:true,elev:[10250,10400,10550,10700,10850,10950,11000,10900,10750,10550,10350,10250],
    betaHeadline:"<b>Already prime — and already busy.</b> The trail melted out early and it's dry and gorgeous start to finish, so the only real catch is logistics, not conditions. Mosquito Flat is the highest trailhead in the Sierra and the lot fills by 7am on weekends, with reservation permits going fast — but with the snow gone, the walking is pure payoff.",
-   snippets:[{q:"Walked in over the weekend — bone dry, wildflowers already starting, not a patch of snow. Lot was full by 6:45 even this early, so get there at dawn.",src:"AllTrails · May 31"},{q:"Easiest high-alpine payoff in the Sierra, and it's already in. Took the kids, no snow, no drama. Bring plenty of water — the year's running dry.",src:"r/CampingandHiking · May 27"}],
-   flagKit:[],
-   safety:"Gentle grade from the highest trailhead in the Sierra — a strong day-one acclimatization base. Afternoon thunderheads can still build over the Mono Divide, and with fire restrictions on it's stoves only, no campfires at the lakes.",
-   backup:{name:"Hilton Lakes",note:"adjacent drainage, quieter, better last-minute permit odds."}},
+   snippets:[{q:"You can now hike all around the Little Lakes Valley with just your boots. The snow is still stable all day, though soon, as the night-time temps rise above freezing, it will become a slushy, post-holing mess.",src:"High Sierra Topix · May 15",url:"https://www.highsierratopix.com/community/viewtopic.php?p=193884#p193884"}],
+   flagKit:[]},
 
   {id:"big-pine",name:"Big Pine Lakes (North Fork)",trailhead:"Big Pine Creek",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
    photo:"photos/big-pine.jpg", /* Second Lake, Big Pine Creek — Jim Morefield, CC BY-SA 2.0 (Wikimedia Commons) */
    coords:[37.1247,-118.4419],
    miles:15,gain:3500,nights:2,maxEl:10600,permitType:"Reservation",permitMechanic:"Quota trailhead",snowLine:11500,snowNote:"Melted out early — lower lakes thawed and turning turquoise.",road:"Glacier Lodge Rd",lowTemp:33,bearCan:true,elev:[7800,8400,9000,9500,10000,10400,10600,10400,10000,9300,8500,7800],
-   betaHeadline:"<b>Turquoise lakes, brutal climb.</b> The North Fork's glacier-fed lakes get their milky blue from rock flour, so they're already turning color regardless of the light snow year. The catch is the climb to reach them — hot, exposed, and bone dry right now, so every report says start at dawn and carry water from the first crossing.",
-   snippets:[{q:"Second Lake is already turning that glacier-milk blue — gorgeous. The North Fork climb is a furnace though, and the year's so dry I'd carry water from the trailhead. Left at first light, no regrets.",src:"r/backpacking · Jun 1"},{q:"Lower crossings still running but lighter than usual for this early. Bear box at the trailhead was full — bring your own can.",src:"AllTrails · May 29"}],
-   flagKit:[{name:"Extra water capacity",why:"hot, exposed climb in a dry year — carry from the first crossing"}],
-   safety:"The early grind up the North Fork is hot and fully exposed — start at dawn and carry water from the first crossing, since the dry year has the lower creeks running thin. Stage I fire restrictions are in effect: gas stove only.",
-   backup:{name:"South Fork Big Pine",note:"same trailhead permit, quieter lakes."}},
+   betaHeadline:"<b>Turquoise lakes, brutal climb.</b> The North Fork's glacier-fed lakes get their milky blue from rock flour, so they're already turning color regardless of the light snow year. The catch is the climb to reach them — hot, exposed, and bone dry right now, so start at dawn and carry water from the first crossing.",
+   snippets:[{q:"Patchy snow approx 8000 ft, near full snow 8500 ft. It seems like we are 1+ month ahead!",src:"High Sierra Topix · Mar 31",url:"https://www.highsierratopix.com/community/viewtopic.php?p=193253#p193253"}],
+   flagKit:[{name:"Extra water capacity",why:"hot, exposed climb in a dry year — carry from the first crossing"}]},
 
   {id:"cottonwood",name:"Cottonwood Lakes",trailhead:"Cottonwood Lakes",agency:"Inyo National Forest",difficulty:"easy",diffLabel:"Easy",region:"lonepine",
    photo:"photos/cottonwood.jpg", /* Cottonwood Lakes / Cirque Peak — Marty B, CC BY-SA 2.0 (Wikimedia Commons) */
    coords:[36.4528,-118.1697],
    miles:12,gain:1500,nights:2,maxEl:11200,permitType:"Reservation",permitMechanic:"Gateway to Whitney zone (separate permit)",snowLine:11500,snowNote:"Melted out early — golden-trout lakes clear and open.",road:"Horseshoe Meadows Rd",lowTemp:34,bearCan:true,elev:[10040,10300,10600,10900,11100,11200,11050,10800,10500,10200,10040],
    betaHeadline:"<b>High, dry, gentle — and open early.</b> The classic acclimatization base before Whitney or Langley is already snow-free, with clear trail and golden trout in the lakes. It's an easy walk this year; just plan for a dry, exposed approach, and remember the Whitney Zone needs its own permit if you push on.",
-   snippets:[{q:"Used it to acclimate before Langley last week — lakes already clear, golden trout everywhere. Trail's bone dry and the road's open. Mellow as ever.",src:"r/14ers · May 29"},{q:"Beautiful and easy, already melted out. Heads up the Whitney Zone needs its own permit if you're continuing — stoves only right now, no fires.",src:"AllTrails · Jun 1"}],
-   flagKit:[],
-   safety:"High, dry, and gentle — an excellent first-night acclimatization base. Continuing to Mt. Whitney needs a separate Whitney Zone permit, and with the dry year, Stage I restrictions mean stove-only cooking.",
-   backup:{name:"Horseshoe Meadow / Trail Pass",note:"same road, lower quota pressure, easier last-minute permits."}},
+   snippets:[{q:"[T]here is basically no snow at these lower elevations in the southern Sierra […] views north revealed snowline to be around 11,000' on southern faces […] now seems like a great time for backpacking trips into Golden Trout Wilderness.",src:"High Sierra Topix · May 4",url:"https://www.highsierratopix.com/community/viewtopic.php?p=193740#p193740"},{q:"New Army pass: snow in the last 2 switchbacks. In those temps soft. […] Wet crossings across Cottonwood cutoff, South Fork Cottonwood Creek getting to South Fork Lake.",src:"High Sierra Topix · Jun 17, 2025",url:"https://www.highsierratopix.com/community/viewtopic.php?p=189092#p189092"}],
+   flagKit:[]},
 
   {id:"sabrina",name:"Sabrina Basin",trailhead:"Lake Sabrina",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"bishop",
    photo:"photos/sabrina.jpg", /* Blue Lake, Sabrina Basin — Jeffrey Pang, CC BY 2.0 (Wikimedia Commons) */
    coords:[37.2125,-118.6125],
    miles:13,gain:2400,nights:2,maxEl:11100,permitType:"Two-week release",permitMechanic:"25/day quota — 10 spots release online 2 weeks out",snowLine:11500,snowNote:"Snow gone early — basin lakes thawing out.",road:"Lake Sabrina Rd",lowTemp:32,bearCan:true,elev:[9080,9500,10000,10500,10900,11100,10800,10400,9900,9400,9080],
    betaHeadline:"<b>The dependable fallback.</b> When the reservation trailheads are booked solid, Sabrina is the move — a third of its daily permits release online exactly two weeks out, so it's predictable instead of a six-month scramble. Same alpine character, and the basin melted out early like everywhere else this year.",
-   snippets:[{q:"Snagged a Sabrina permit the morning it dropped — the two-weeks-out release is so much saner than the reservation lottery. Basin was nearly empty and already snow-free.",src:"r/backpacking · May 30"},{q:"Blue Lake and Dingleberry are gorgeous and quiet. A solid plan B that's really a plan A. Bone dry already, and it's stove-only this year — no campfires.",src:"AllTrails · May 27"}],
-   flagKit:[],
-   safety:"A reliable fallback when the reservation trailheads are booked. Storms build fast over the crest, so plan to be off exposed ground before noon — and with fire restrictions on, it's stove-only cooking.",
-   backup:{name:"Tyee Lakes",note:"adjacent drainage, same two-weeks-out release, even quieter."}}
+   snippets:[{q:"[T]he snow is pretty thin below ~10,000'. If you're back packing at low elevations, this will feel like a hell of a drought year with really early entry […] above ~11,000' things will feel like your run of the mill low snow year.",src:"High Sierra Topix · Mar 16",url:"https://www.highsierratopix.com/community/viewtopic.php?p=193092#p193092"}],
+   flagKit:[]},
+
+  {id:"duck-pass",name:"Duck Pass → Duck Lake",trailhead:"Coldwater (Lake Mary)",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"mammoth",
+   photo:"photos/duck-pass.jpg", /* Duck Pass — The Fun Chronicles, CC0 (Wikimedia Commons) */
+   coords:[37.5905,-118.9890],
+   miles:11,gain:1900,nights:2,maxEl:10797,permitType:"Reservation",permitMechanic:"Quota trailhead — Mammoth Lakes Basin",snowLine:11500,snowNote:"Pass melted out weeks early — it normally holds snow into July.",road:"Lake Mary Rd",lowTemp:36,bearCan:true,elev:[9130,9350,9600,9850,10100,10400,10797,10600,10477,10520,10797,10300,9800,9450,9130],
+   betaHeadline:"<b>The Basin's classic pass walk, open weeks early.</b> Duck Pass usually hangs onto its snowfield well into July, but in this record-low year the switchbacks are dry walking the whole way over. Skelton and Barney are ice-free, the first mosquito wave won't be far behind the melt — and with Stage I restrictions in force, it's stove-only dinners at the lake.",
+   snippets:[{q:"Mammoth and Coldwater creeks are flowing. Lakes are thawed and blue […] The thaw is in full swing.",src:"High Sierra Topix · Mar 17",url:"https://www.highsierratopix.com/community/viewtopic.php?p=193100#p193100"},{q:"Duck Pass still has a few snowy sections near the top, on the east side. All have been well-traveled, and are boot tracked.",src:"High Sierra Topix · Jun 22, 2025",url:"https://www.highsierratopix.com/community/viewtopic.php?p=189131#p189131"}],
+   flagKit:[{name:"Head net + repellent",why:"first mosquito hatch is on at Skelton and Barney"}]},
+
+  {id:"thousand-island",name:"Thousand Island Lake",trailhead:"Agnew Meadows",agency:"Inyo National Forest",difficulty:"mod",diffLabel:"Moderate",region:"mammoth",
+   photo:"photos/thousand-island.jpg", /* Mt Banner and Thousand Island Lake — Dcrjsr, CC BY 3.0 (Wikimedia Commons) */
+   coords:[37.6817,-119.0856],
+   miles:17,gain:2300,nights:2,maxEl:9834,permitType:"Reservation",permitMechanic:"River Trail entry — among Inyo's most competitive",snowLine:11500,snowNote:"Banner still wears patches up high, but trail and shoreline cleared early.",road:"Reds Meadow Rd (shuttle)",lowTemp:35,bearCan:true,elev:[8335,8500,8700,8950,9100,9300,9500,9700,9834,9834,9650,9400,9100,8800,8550,8335],
+   betaHeadline:"<b>The postcard, earned.</b> Banner Peak over a lake full of islands — the shot every JMT hiker walks for, in the Ansel Adams Wilderness, and the thin snow year opened the shoreline weeks ahead of schedule. It's also one of the most competitive overnight permits on this side of the crest, and the late-June PCT/JMT wave is streaming through: book the River Trail entry the moment your dates firm up, and plan around the Reds Meadow shuttle for mid-day trailhead access.",
+   snippets:[{q:"[Up the] San Joaquin 'River Trail,' up to Shadow Lake–Garnet Lake–1000 Island Lake–Island Pass […] Early morning iciness required climbing skins for safety on steep slopes.",src:"High Sierra Topix · May 3",url:"https://www.highsierratopix.com/community/viewtopic.php?p=193738#p193738"},{q:"Gem Lake to Thousand Island Lake via Agnew Pass — no snow, all creeks hopped rocks across, lush green, wildflowers, clear air. Few people once off the PCT.",src:"High Sierra Topix · Jul 2, 2025",url:"https://www.highsierratopix.com/community/viewtopic.php?p=189270#p189270"}],
+   flagKit:[{name:"Sun hoody + extra water",why:"the River Trail climb runs hot and exposed in a dry June"}]},
+
+  {id:"mammoth-tuolumne",name:"Reds Meadow → Tuolumne (JMT)",trailhead:"Devils Postpile / Reds Meadow",agency:"Inyo National Forest",difficulty:"hard",diffLabel:"Hard",region:"mammoth",
+   photo:"photos/mammoth-tuolumne.jpg", /* Lyell Canyon — Kaitymh, CC BY-SA 4.0 (Wikimedia Commons) */
+   coords:[37.6297,-119.0846],
+   miles:36,gain:6300,nights:3,maxEl:11056,permitType:"Reservation",permitMechanic:"JMT North of Devils Postpile — carries through into Yosemite",snowLine:11500,snowNote:"Donohue opening weeks early — expect lingering soft patches near the pass.",road:"Reds Meadow Rd (shuttle)",lowTemp:33,bearCan:true,elev:[7560,8100,8600,9000,9300,9834,10205,9700,10100,11056,10400,9600,8900,8690],
+   betaHeadline:"<b>The classic JMT leg, running a month ahead.</b> Thirty-six miles north past the Minarets and Thousand Island, then over Donohue into Lyell Canyon — in a normal June you'd be kicking steps up Donohue, and even in this record-low year the late-May reports still found soft snow up high — expect the last patches on the north sides. One Inyo permit (JMT North of Devils Postpile) carries you through into Yosemite, and the summer YARTS bus closes the loop back to Mammoth.",
+   snippets:[{q:"While I had about 75% good snow during this trip, late in day the snow got soft and slushy. […] Temps were close to freezing at all camps.",src:"High Sierra Topix · May 28",url:"https://www.highsierratopix.com/community/viewtopic.php?p=193983#p193983"},{q:"Donohue & Island Pass: Super windy & cool. […] Got the usual permit & bear can check on the way to Donohue Pass.",src:"High Sierra Topix · Jul 7, 2025",url:"https://www.highsierratopix.com/community/viewtopic.php?p=189355#p189355"}],
+   flagKit:[{name:"Real warmth for 11,000′",why:"camps near Donohue freeze even in a dry June"},{name:"YARTS timetable",why:"the walk ends 60 road-miles from your car — the bus is the way back"}]}
 ];
 const BASE_KIT=["Shelter","Sleeping pad","Stove + fuel","Water filter","Headlamp","Map + compass","First-aid","Rain shell","Insulating layer","Sun protection","Trekking poles"];
 const $=s=>document.querySelector(s);
@@ -346,7 +371,11 @@ const $=s=>document.querySelector(s);
 let LIVE=null,PERMITS=null,CURRENT=null,LASTLIST=null;
 function liveRefresh(){
   renderHome(LASTLIST);                                                   // tile tags pick up live data
-  if(CURRENT&&$("#detail").classList.contains("show"))openRoute(CURRENT); // refresh an already-open detail
+  if(CURRENT&&$("#detail").classList.contains("show")){                   // refresh an already-open detail
+    const ask=$("#askOut")?$("#askOut").innerHTML:"";                     // ...without losing an ask answer
+    openRoute(CURRENT);
+    if(ask)$("#askOut").innerHTML=ask;
+  }
 }
 fetch("/api/conditions").then(r=>r.ok?r.json():null).then(d=>{if(d&&d.trailheads){LIVE=d;liveRefresh();}}).catch(()=>{});
 fetch("/api/permits").then(r=>r.ok?r.json():null).then(d=>{if(d&&d.trailheads){PERMITS=d;liveRefresh();}}).catch(()=>{});
@@ -501,12 +530,43 @@ function forecastRows(r,live){
   const shown=[live.periods[0],...live.periods.slice(1).filter(p=>p.isDaytime)].slice(0,3);
   let h=`<div class="cond-row"><span class="ck">Forecast low</span><span class="cv">${lo!==null?`${lo}°F next two nights${elev}`:"—"}</span><span class="mk ${lo!==null&&lo<32?'w':'ok'}">${lo!==null&&lo<32?'cold':'mild'}</span></div>`;
   h+=`<div class="cond-row"><span class="ck">Outlook</span><span class="cv">${shown.map(p=>`<b>${p.name}</b> ${p.tempF}° ${p.short}`).join(" · ")}</span></div>`;
-  const al=LIVE.alerts||[];
-  h+=al.length
+  const al=live.alerts; // per-trailhead NWS zone; null = zone feed unavailable, say nothing
+  if(Array.isArray(al))h+=al.length
     ?`<div class="cond-row"><span class="ck">NWS alerts</span><span class="cv">${al.map(a=>a.event).join(" · ")}</span><span class="mk w">active</span></div>`
-    :`<div class="cond-row"><span class="ck">NWS alerts</span><span class="cv">None active for the Eastern Sierra zone</span><span class="mk ok">clear</span></div>`;
+    :`<div class="cond-row"><span class="ck">NWS alerts</span><span class="cv">None active for this trailhead's zone</span><span class="mk ok">clear</span></div>`;
   return h;
 }
+
+/* Ask-about-this-route: ships the question + a compact snapshot of the live
+   data already on the page to api/ask.js (Claude, grounded). Offline → honest
+   pointer to the official sources, never canned advice. */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function liveSnapshot(id){
+  const out={};
+  const c=LIVE&&LIVE.trailheads[id];
+  if(c){out.forecast={lowF:c.low,highF:c.high,outlook:c.periods.slice(0,3).map(p=>`${p.name} ${p.tempF}F ${p.short}`).join("; ")};if(Array.isArray(c.alerts))out.nwsAlerts=c.alerts.map(a=>a.event);}
+  const p=PERMITS&&PERMITS.trailheads[id];
+  if(p)out.permitsBookableNext14={...Object.fromEntries(p.days.map(d=>[d.date.slice(5),d.remaining===null?"?":d.remaining]))};
+  return out;
+}
+window.askRoute=async function(id,q){
+  q=(q||"").trim();
+  if(!q)return;
+  const out=$("#askOut"),btn=$("#askBtn");
+  out.innerHTML=`<div class="ask-answer ask-loading">Thinking…</div>`;
+  if(btn)btn.disabled=true;
+  let data=null;
+  try{
+    const r=await fetch("/api/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({routeId:id,question:q,live:liveSnapshot(id)}),signal:AbortSignal.timeout(12000)});
+    if(r.ok)data=await r.json();
+  }catch(e){}
+  if(btn)btn.disabled=false;
+  if(data&&data.answer){
+    out.innerHTML=`<div class="ask-answer">${esc(data.answer)}</div><div class="ask-meta">Claude · grounded in this route's record + the live data above · plan with your own judgment</div>`;
+  }else{
+    out.innerHTML=`<div class="ask-answer ask-off">Ask is offline right now — for current conditions check the <a href="https://www.fs.usda.gov/inyo" target="_blank" rel="noopener">Inyo NF site</a>, and permits on <a href="https://www.recreation.gov/permits/233262" target="_blank" rel="noopener">Recreation.gov</a>.</div>`;
+  }
+};
 
 window.openRoute=function(id){
   CURRENT=id;
@@ -524,9 +584,9 @@ window.openRoute=function(id){
     </div>
     <div class="detail-body">
       <div class="block">
-        <div class="block-h"><span class="diamond"></span><span class="t">Recent beta</span><span class="when">latest reports</span></div>
+        <div class="block-h"><span class="diamond"></span><span class="t">Recent beta</span><span class="when">via High Sierra Topix</span></div>
         <div class="beta-headline">${r.betaHeadline}</div>
-        <div style="margin-top:12px">${r.snippets.map(s=>`<div class="snippet"><span class="q">"${s.q}"</span><span class="src">${s.src}</span></div>`).join("")}</div>
+        <div style="margin-top:12px">${r.snippets.map(s=>`<div class="snippet"><span class="q">"${s.q}"</span><a class="src" href="${s.url}" target="_blank" rel="noopener">${s.src} ↗</a></div>`).join("")}</div>
       </div>
       <div class="block">
         <div class="block-h"><span class="diamond"></span><span class="t">Conditions</span><span class="when">${live?`NOAA forecast · updated ${timeAgo(LIVE.fetchedAt)}`:`as of ${TODAY}`}</span></div>
@@ -547,10 +607,18 @@ window.openRoute=function(id){
         </div>
         ${permitAvail(r)}
       </div>
-      <div class="block safety">
-        <div class="block-h"><span class="diamond"></span><span class="t">Safety &amp; backup</span></div>
-        <p>${r.safety}</p>
-        <div class="backup"><div class="bl">If permits fall through</div><b>${r.backup.name}</b> — ${r.backup.note}</div>
+      <div class="block">
+        <div class="block-h"><span class="diamond"></span><span class="t">Ask about this route</span><span class="when">Claude · uses this page's live data</span></div>
+        <div class="ask-chips">
+          <button class="chip" onclick="askRoute('${r.id}',this.textContent)">Permits look tight — what's my fallback?</button>
+          <button class="chip" onclick="askRoute('${r.id}',this.textContent)">Any safety notes for this route?</button>
+          <button class="chip" onclick="askRoute('${r.id}',this.textContent)">Good first backpacking trip?</button>
+        </div>
+        <div class="ask-row">
+          <input id="askInput" maxlength="200" placeholder="e.g. best camp if I get a late start?" onkeydown="if(event.key==='Enter')askRoute('${r.id}',this.value)">
+          <button id="askBtn" onclick="askRoute('${r.id}',document.getElementById('askInput').value)">Ask</button>
+        </div>
+        <div id="askOut"></div>
       </div>
     </div>
     <div class="exits">
@@ -610,13 +678,44 @@ function parseWhen(t){
   return (qualLabel+base).trim();
 }
 
-/* Parse a free-text search into structured constraints + filter ROUTES.
-   Recognizes: region (Bishop, Lone Pine, Mammoth, Big Pine, etc.),
-   nights (e.g. "3 day", "2 night"), timeframe (month/season/relative), difficulty, terrain (lakes),
-   permit style (walk-up), and snow preference. Shows what was understood
-   in the .parsed band. If nothing matches, surfaces an honest empty state
-   rather than silently showing everything. */
-function runSearch(text){
+/* Search orchestration: try the live LLM parser first (api/search.js — Claude
+   Haiku matching against the catalog). If it's offline (no key yet), slow, or
+   errors, fall back to the keyword parser below. Provenance is labeled either way. */
+async function runSearch(text){
+  if(!text){runKeywordSearch(text);return;}
+  const btn=$("#goBtn"),orig=btn.textContent;
+  btn.textContent="Searching…";btn.disabled=true;
+  let ai=null;
+  try{
+    const r=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query:text}),signal:AbortSignal.timeout(8000)});
+    if(r.ok)ai=await r.json();
+  }catch(e){}
+  btn.textContent=orig;btn.disabled=false;
+  if(ai&&Array.isArray(ai.routeIds)&&ai.pills)renderAISearch(ai);
+  else runKeywordSearch(text);
+}
+
+function renderAISearch(ai){
+  const pills={};
+  for(const k in ai.pills)if(ai.pills[k])pills[k]=ai.pills[k];
+  showParsed(pills,"parsed by Claude · tap × to remove");
+  const list=ai.routeIds.map(id=>ROUTES.find(r=>r.id===id)).filter(Boolean);
+  const empty=$("#emptyState");
+  if(list.length===0){
+    empty.innerHTML=`<b>No catalog routes fit that.</b>${ai.note?" "+ai.note:""} Here's the full list.`;
+    empty.classList.add("show");
+    renderHome();
+  }else{
+    if(ai.note){empty.innerHTML=ai.note;empty.classList.add("show");}
+    else empty.classList.remove("show");
+    renderHome(list);
+  }
+}
+
+/* Keyword fallback parser — recognizes region, nights, timeframe, difficulty,
+   terrain (lakes), permit style, and snow preference. Shows what was understood
+   in the .parsed band; honest empty state when nothing matches. */
+function runKeywordSearch(text){
   const t=text.toLowerCase().trim();
   const parsed={};
   const filters=[];
@@ -664,16 +763,16 @@ function runSearch(text){
   }
   filters.forEach(f=>{list=list.filter(f);});
 
-  showParsed(parsed);
+  showParsed(parsed,"keyword parser · tap × to remove");
 
   // honest empty state
   const empty=document.getElementById("emptyState");
   if(list.length===0){
     let msg;
-    if(regionMatch && regionMatch.region!=="bishop" && regionMatch.region!=="lonepine"){
-      msg=`<b>No ${regionMatch.label} routes in this preview.</b> Cairn currently covers the Bishop and Lone Pine areas. Here are the closest 5 routes.`;
+    if(regionMatch && !["bishop","lonepine","mammoth"].includes(regionMatch.region)){
+      msg=`<b>No ${regionMatch.label} routes yet.</b> Cairn currently covers the Mammoth, Bishop, and Lone Pine areas. Here's the full route list.`;
     } else {
-      msg=`<b>No routes match all those constraints.</b> Try removing a pill above, or browse the 5 routes below.`;
+      msg=`<b>No routes match all those constraints.</b> Try removing a pill above, or browse the full list below.`;
     }
     empty.innerHTML=msg;
     empty.classList.add("show");
@@ -684,9 +783,10 @@ function runSearch(text){
   renderHome(list);
 }
 
-function showParsed(parsed){
+function showParsed(parsed,subText){
   const pills=document.getElementById("pills");
   const band=document.getElementById("parsed");
+  band.querySelector(".sub").textContent=subText||"tap × to remove a constraint";
   const keys=Object.keys(parsed);
   if(keys.length===0){band.classList.remove("show");return;}
   pills.innerHTML=keys.map(k=>
